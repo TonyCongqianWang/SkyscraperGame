@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkyscraperGameGui", "SkyscraperGameGui\SkyscraperGameGui.csproj", "{9CD64ED8-0655-48B8-8933-6A40CE9D73FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkyscraperGameEngine", "SkyscraperGameEngine\SkyscraperGameEngine.csproj", "{A5731FE5-258B-8C9C-26D2-FC31F8BE9E32}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9CD64ED8-0655-48B8-8933-6A40CE9D73FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CD64ED8-0655-48B8-8933-6A40CE9D73FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CD64ED8-0655-48B8-8933-6A40CE9D73FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CD64ED8-0655-48B8-8933-6A40CE9D73FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5731FE5-258B-8C9C-26D2-FC31F8BE9E32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5731FE5-258B-8C9C-26D2-FC31F8BE9E32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5731FE5-258B-8C9C-26D2-FC31F8BE9E32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5731FE5-258B-8C9C-26D2-FC31F8BE9E32}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A8F3918B-3FA6-47C9-A27B-1B2BD59E1A41}
+	EndGlobalSection
+EndGlobal
