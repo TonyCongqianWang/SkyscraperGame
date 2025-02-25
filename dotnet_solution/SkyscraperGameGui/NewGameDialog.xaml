@@ -1,0 +1,12 @@
+<Window x:Class="SkyscraperGameGui.NewGameDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Insert" Height="200" Width="350"
+        ResizeMode="NoResize"
+        KeyDown="Window_KeyDown">
+    <Grid>
+        <Label Content="Start New Game?" HorizontalAlignment="Center" Margin="0,0,0,50" VerticalAlignment="Center" Width="253" FontSize="30" FontWeight="Bold"/>
+        <Button x:Name="NewGameButton" Content="Yes" HorizontalAlignment="Center" Height="25" Margin="0,80,140,0" VerticalAlignment="Center" Width="120" Click="NewGameButton_Click"/>
+        <Button x:Name="CancelButton" Content="No" HorizontalAlignment="Center" Margin="140,80,0,0" VerticalAlignment="Center" Width="120" Height="25" FontSize="12" Click="CancelButton_Click"/>
+    </Grid>
+</Window>
