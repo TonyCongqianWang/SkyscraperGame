@@ -1,7 +1,7 @@
 <Window x:Class="SkyscraperGameGui.NewGameDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Insert" Height="200" Width="350"
+        Title="New Game" Height="200" Width="350"
         ResizeMode="NoResize"
         KeyDown="Window_KeyDown">
     <Grid>

@@ -1,4 +1,8 @@
-﻿namespace SkyscraperGameGui
+﻿using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+
+namespace SkyscraperGameGui
 {
     record class GameModel
     {
@@ -38,7 +42,7 @@
             {
                 for (int j = 0; j < size; j++)
                 {
-                    PossibleValues[i, j] = [];
+                    PossibleValues[i, j] = new HashSet<byte>();
                 }
             }
         }

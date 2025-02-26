@@ -3,9 +3,9 @@ using System.Windows.Input;
 
 namespace SkyscraperGameGui
 {
-    public partial class CellDialog : Window
+    public partial class ConstraintDialog : Window
     {
-        public CellDialog()
+        public ConstraintDialog()
         {
             InitializeComponent();
         }
