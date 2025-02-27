@@ -1,6 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using SkyscraperGameEngine;
 
 namespace SkyscraperGameGui;
@@ -10,7 +11,7 @@ namespace SkyscraperGameGui;
 /// </summary>
 public partial class MainWindow : Window
 {
-    readonly GridRenderer renderer = new();
+    readonly GridRenderer renderer;
     readonly InfoRenderer infoRenderer;
     readonly GameEngine gameEngine = new();
     readonly MD5 md5 = MD5.Create();
@@ -18,6 +19,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        renderer = new(CreateCellDialogCallback);
         infoRenderer = new(PuzzleStatusLabel,
                            CurrentDepthLabel,
                            SolvingTimeLabel,
@@ -25,22 +27,29 @@ public partial class MainWindow : Window
         gameEngine.GetState();
         RenderNewGame();
     }
-    public int OpenCellDialog()
+    public Action CreateCellDialogCallback(Grid cellGrid, (int, int) position)
     {
-        Point gridCenter = GameGrid.PointToScreen(new Point(GameGrid.ActualWidth / 2, GameGrid.ActualHeight / 2));
-
-        CellDialog cellDialog = new()
+        return () =>
         {
-            Owner = this,
-            WindowStartupLocation = WindowStartupLocation.Manual
+            Point gridCenter = GameGrid.PointToScreen(new Point(GameGrid.ActualWidth / 2, GameGrid.ActualHeight / 2));
+            Action<int> digitCallback = (digit) =>
+            {
+                gameEngine.TryInsertValue(position, (byte)digit);
+                GameStateModel gameStateModel = new(gameEngine.GetState());
+                RenderUpdate(gameStateModel);
+            };
+            CellDialog cellDialog = new(cellGrid, digitCallback)
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.Manual
+            };
+            cellDialog.Loaded += (s, e) =>
+            {
+                cellDialog.Left = gridCenter.X - (cellDialog.ActualWidth / 2);
+                cellDialog.Top = gridCenter.Y - (cellDialog.ActualHeight / 2);
+            };
+            cellDialog.ShowDialog();
         };
-        cellDialog.Loaded += (s, e) =>
-        {
-            cellDialog.Left = gridCenter.X - (cellDialog.ActualWidth / 2);
-            cellDialog.Top = gridCenter.Y - (cellDialog.ActualHeight / 2);
-        };
-        cellDialog.ShowDialog();
-        return -1;
     }
 
     private void NewGameButton_Click(object sender, RoutedEventArgs e)
@@ -57,18 +66,16 @@ public partial class MainWindow : Window
             int seed = Math.Abs(BitConverter.ToInt32(md5.ComputeHash(seedBytes), 0));
             if (RngSeedBox.Text == "")
                 seed = -1;
-            if (!double.TryParse(GridFillPercentBox.Text, out double gridFillPercent))
-                gridFillPercent = 0;
-            if (!double.TryParse(ConstrFillPercentBox.Text, out double constrFillPercent))
-                constrFillPercent = 100;
             InstanceGenerationOptions options = new()
             {
-                Size = 9,
+                Size = 4,
                 RandomSeed = seed,
-                GridFillRate = gridFillPercent / 100,
-                ConstraintFillRate = constrFillPercent / 100,
                 AllowInfeasible = AllowInFeasibleCheckbox.IsChecked == true
             };
+            if (double.TryParse(GridFillPercentBox.Text, out double gridFillPercent))
+                options.GridFillRate = gridFillPercent / 100;
+            if (double.TryParse(ConstrFillPercentBox.Text, out double constrFillPercent))
+                options.ConstraintFillRate = gridFillPercent / 100;
             gameEngine.StartNewGame(options);
             RenderNewGame();
         }
@@ -78,7 +85,13 @@ public partial class MainWindow : Window
     {
         gameEngine.TryUndoLast();
         GameStateModel gameStateModel = new(gameEngine.GetState());
+        RenderUpdate(gameStateModel);
+    }
+
+    private void RenderUpdate(GameStateModel gameStateModel)
+    {
         infoRenderer.UpdateInfo(gameStateModel);
+        renderer.Render(GameGrid, gameStateModel);
     }
 
     private void RenderNewGame()

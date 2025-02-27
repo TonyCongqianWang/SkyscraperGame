@@ -7,6 +7,12 @@ namespace SkyscraperGameGui;
 class GridRenderer
 {
     private int gridSize = 0;
+    private Func<Grid, (int, int), Action> createCellDialogCallback;
+
+    public GridRenderer(Func<Grid, (int, int), Action> createCellDialogCallback)
+    {
+        this.createCellDialogCallback = createCellDialogCallback;
+    }
 
     public void Render(Grid gameGrid, GameStateModel model)
     {
@@ -111,7 +117,7 @@ class GridRenderer
         }
     }
 
-    private static void CreateGrid(Grid gameGrid, int size)
+    private void CreateGrid(Grid gameGrid, int size)
     {
         int outer_size = size + 2;
 
@@ -258,7 +264,8 @@ class GridRenderer
                     Opacity = 0,
                     Background = Brushes.Transparent
                 };
-                button.Click += (sender, e) => { /* Event handler code */ };
+                Action callback = createCellDialogCallback(subGrid, (i, j));
+                button.Click += (sender, e) => { callback(); };
                 innerGrid.Children.Add(button);
                 Grid.SetRow(button, i);
                 Grid.SetColumn(button, j);

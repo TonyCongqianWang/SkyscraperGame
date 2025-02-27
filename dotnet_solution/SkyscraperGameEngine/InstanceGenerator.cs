@@ -188,7 +188,7 @@ class InstanceGenerator
                 invalidValues[i, j] = [];
             }
         }
-        GameNodes initialState = new(size, false, false, 0, 0, emptyGrid, invalidValues);
+        GameNodes initialState = new(size, false, false, 0, emptyGrid, invalidValues);
         for (int i = 0; i < size; i++)
         {
             for (int j = 0; j < size; j++)

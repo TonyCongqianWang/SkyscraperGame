@@ -49,8 +49,8 @@ record class GameStateModel
         NumChecks = gameState.GameStatistics.NumChecks;
         NumUnsets = gameState.GameStatistics.NumUndos;
 
-        Size = currendNode.Size;
-        CurrentDepth = currendNode.CurrentDepth;
+        Size = gameState.GameSize;
+        CurrentDepth = gameState.GameNodes.Count - 1;
         IsSolved = currendNode.IsSolved;
         IsInfeasible = currendNode.IsInfeasible;
         LastSetIndex = currendNode.LastInsertPosition;

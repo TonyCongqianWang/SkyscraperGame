@@ -3,7 +3,6 @@
 public class GameNodes(int size,
                  bool isSolved,
                  bool isInfeasible,
-                 int currentDepth,
                  int numInserted,
                  byte[,] gridValues,
                  HashSet<byte>[,] gridValidValues)
@@ -11,8 +10,7 @@ public class GameNodes(int size,
     public int Size { get; } = size;
     public bool IsSolved { get; set; } = isSolved;
     public bool IsInfeasible { get; set; } = isInfeasible;
-    public int CurrentDepth { get; set; } = currentDepth;
-    public int NumInserts { get; set; } = numInserted;
+    public int NumInserted { get; set; } = numInserted;
     public int NumCells { get; } = size * size;
     public (int, int) LastInsertPosition { get; set; } = (-1, -1);
     public byte[,] GridValues { get; set; } = gridValues;
@@ -30,6 +28,6 @@ public class GameNodes(int size,
                 gridValidValues[i, j] = [.. GridInvalidValues[i, j]];
             }
         }
-        return new GameNodes(Size, IsSolved, IsInfeasible, CurrentDepth, NumInserts, newGridValues, gridValidValues);
+        return new GameNodes(Size, IsSolved, IsInfeasible, NumInserted, newGridValues, gridValidValues);
     }
 }
