@@ -2,7 +2,7 @@
 
 class ConstraintChecker
 {
-    public void CheckConstraint(GameState state, int constraintIndex)
+    public void CheckConstraint(GameNodes state, int constraintIndex)
     {
     }
 }

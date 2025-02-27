@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using System.Security.Cryptography;
+using System.Text;
+using System.Windows;
+using SkyscraperGameEngine;
 
 namespace SkyscraperGameGui;
 
@@ -9,6 +12,8 @@ public partial class MainWindow : Window
 {
     readonly GridRenderer renderer = new();
     readonly InfoRenderer infoRenderer;
+    readonly GameEngine gameEngine = new();
+    readonly MD5 md5 = MD5.Create();
 
     public MainWindow()
     {
@@ -17,13 +22,8 @@ public partial class MainWindow : Window
                            CurrentDepthLabel,
                            SolvingTimeLabel,
                            MovesValuesLabel);
-        var gameModel = new GameModel(9);
-        renderer.Render(GameGrid, gameModel);
-        infoRenderer.UpdateInfo(gameModel);
-        gameModel.GridValues[0, 0] = 1;
-        gameModel.LastSetIndex = (0, 0);
-        renderer.Render(GameGrid, gameModel);
-        gameModel.IsSolved = true;
+        gameEngine.GetState();
+        RenderNewGame();
     }
     public int OpenCellDialog()
     {
@@ -53,17 +53,38 @@ public partial class MainWindow : Window
         dialog.ShowDialog();
         if (dialog.DialogResult == true)
         {
-            GameModel gameModel = new(9);
-
-            infoRenderer.NewGame(gameModel);
-            renderer.Render(GameGrid, gameModel);
+            byte[] seedBytes = Encoding.UTF8.GetBytes(RngSeedBox.Text);
+            int seed = Math.Abs(BitConverter.ToInt32(md5.ComputeHash(seedBytes), 0));
+            if (RngSeedBox.Text == "")
+                seed = -1;
+            if (!double.TryParse(GridFillPercentBox.Text, out double gridFillPercent))
+                gridFillPercent = 0;
+            if (!double.TryParse(ConstrFillPercentBox.Text, out double constrFillPercent))
+                constrFillPercent = 100;
+            InstanceGenerationOptions options = new()
+            {
+                Size = 9,
+                RandomSeed = seed,
+                GridFillRate = gridFillPercent / 100,
+                ConstraintFillRate = constrFillPercent / 100,
+                AllowInfeasible = AllowInFeasibleCheckbox.IsChecked == true
+            };
+            gameEngine.StartNewGame(options);
+            RenderNewGame();
         }
     }
 
     private void UnsetButton_Click(object sender, RoutedEventArgs e)
     {
-        GameModel gameModel = new(9);
-        gameModel.IsSolved = true;
-        infoRenderer.UpdateInfo(gameModel);
+        gameEngine.TryUndoLast();
+        GameStateModel gameStateModel = new(gameEngine.GetState());
+        infoRenderer.UpdateInfo(gameStateModel);
+    }
+
+    private void RenderNewGame()
+    {
+        GameStateModel gameStateModel = new(gameEngine.GetState());
+        infoRenderer.NewGame(gameStateModel);
+        renderer.Render(GameGrid, gameStateModel);
     }
 }

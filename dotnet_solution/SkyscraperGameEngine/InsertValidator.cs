@@ -2,9 +2,11 @@
 
 class InsertValidator
 {
-    public bool ValidateInsert(GameState model, (int, int) position, byte value)
+    public bool ValidateInsert(GameNodes model, (int, int) position, byte value)
     {
+        if (value < 1 || value > model.Size)
+            return false;
         (int x, int y) = position;
-        return model.GridValidValues[x, y].Contains(value);
+        return !model.GridInvalidValues[x, y].Contains(value);
     }
 }

@@ -26,17 +26,17 @@ class InfoRenderer
         timer.Tick += UpdateTime;
     }
 
-    public void NewGame(GameModel gameModel)
+    public void NewGame(GameStateModel gameModel)
     {
         StartTimer();
         UpdateInfo(gameModel);
     }
 
-    public void UpdateInfo(GameModel gameModel)
+    public void UpdateInfo(GameStateModel gameModel)
     {
-        int inserts = gameModel.NumInserts;
-        int checks = gameModel.NumChecks;
-        int unsets = gameModel.NumUnsets;
+        UInt128 inserts = gameModel.NumInserts;
+        UInt128 checks = gameModel.NumChecks;
+        UInt128 unsets = gameModel.NumUnsets;
         if (gameModel.IsSolved)
         {
             puzzleStatusLabel.Content = "Puzzle Solved!";

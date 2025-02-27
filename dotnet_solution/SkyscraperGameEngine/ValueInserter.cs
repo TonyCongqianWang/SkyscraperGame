@@ -3,22 +3,24 @@ namespace SkyscraperGameEngine;
 
 class ValueInserter
 {
-    internal void InsertValue(GameState state, (int, int) position, byte value)
+    internal void InsertValue(GameNodes state, (int, int) position, byte value)
     {
         (int x, int y) = position;
         state.CurrentDepth++;
         state.NumInserts++;
+        state.LastInsertPosition = position;
         for (int row = 0; row < state.Size; row++)
-            state.GridValidValues[row, y].Remove(value);
+            state.GridInvalidValues[row, y].Add(value);
         for (int col = 0; col < state.Size; col++)
-            state.GridValidValues[x, col].Remove(value);
-        state.GridValidValues[x, y].Clear();
+            state.GridInvalidValues[x, col].Add(value);
         state.GridValues[x, y] = value;
+        for (value = 1; value <= state.Size; value++)
+            state.GridInvalidValues[x, y].Add(value);
     }
 
-    internal void UpdateSolveStatus(GameState gameState)
+    internal void UpdateSolveStatus(GameNodes gameState)
     {
-        if (gameState.NumInserts == gameState.Size * gameState.Size)
+        if (gameState.NumInserts == gameState.NumCells)
             gameState.IsSolved = true;
     }
 }

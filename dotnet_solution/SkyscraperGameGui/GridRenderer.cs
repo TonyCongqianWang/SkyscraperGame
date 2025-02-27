@@ -8,7 +8,7 @@ class GridRenderer
 {
     private int gridSize = 0;
 
-    public void Render(Grid gameGrid, GameModel model)
+    public void Render(Grid gameGrid, GameStateModel model)
     {
         if (gridSize != model.Size)
         {
@@ -89,7 +89,7 @@ class GridRenderer
                                 textBlock.Text = number <= model.Size ? number.ToString() : "";
                                 if (model.GridValues[i, j] > 0 || number > model.Size)
                                     textBlock.Opacity = 0;
-                                else if (!model.GridValueValidities[i, j][number - 1])
+                                else if (!model.GridValueValidities[i, j, number - 1])
                                     textBlock.Foreground = Brushes.Gray;
                                 else
                                     textBlock.Foreground = Brushes.Black;
