@@ -1,0 +1,5 @@
+﻿namespace SkyscraperGameEngine;
+
+class GameOptions
+{
+}

@@ -1,14 +1,14 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-
-namespace SkyscraperGameGui
+﻿namespace SkyscraperGameGui
 {
     record class GameModel
     {
         public int Size { get; }
-        public int IsSolved { get; set; } = 0;
-        public int IsInfeasible { get; set; } = 0;
+        public int CurrentDepth { get; set; } = 0;
+        public bool IsSolved { get; set; } = false;
+        public bool IsInfeasible { get; set; } = false;
+        public int NumInserts { get; set; } = 0;
+        public int NumChecks { get; set; } = 0;
+        public int NumUnsets { get; set; } = 0;
         public (int, int) LastSetIndex { get; set; } = (-1, -1);
         public byte[] TopValues { get; set; }
         public byte[] BottomValues { get; set; }
@@ -19,7 +19,7 @@ namespace SkyscraperGameGui
         public bool[] LeftValuesCheckStatus { get; set; }
         public bool[] RightValuesCheckStatus { get; set; }
         public byte[,] GridValues { get; set; }
-        public HashSet<byte>[,] PossibleValues { get; set; }
+        public bool[,][] GridValueValidities { get; set; }
 
         public GameModel(int size)
         {
@@ -37,12 +37,12 @@ namespace SkyscraperGameGui
             RightValuesCheckStatus = new bool[size];
 
             GridValues = new byte[size, size];
-            PossibleValues = new HashSet<byte>[size, size];
+            GridValueValidities = new bool[size, size][];
             for (int i = 0; i < size; i++)
             {
                 for (int j = 0; j < size; j++)
                 {
-                    PossibleValues[i, j] = new HashSet<byte>();
+                    GridValueValidities[i, j] = new bool[size];
                 }
             }
         }
