@@ -6,7 +6,7 @@ class ConstraintChecker
 {
     public bool IsConstraintSatisfiable(int constraintValue, byte maxValue, IEnumerable<(byte, byte)> gridValueBounds)
     {
-        int valueLb = 0;
+        int valueLb = 1;
         int valueLhsUb = 0;
         byte currentMaxLb = 0;
         byte currentMaxUb = 0;
@@ -19,9 +19,10 @@ class ConstraintChecker
                 valueLhsUb++;
                 if (lb > currentMaxUb)
                 {
-                    valueLb++;
                     currentMaxLb = lb;
                     currentMaxUb = ub;
+                    if (currentMaxUb < maxValue)
+                        valueLb++;
                 }
                 else
                 {

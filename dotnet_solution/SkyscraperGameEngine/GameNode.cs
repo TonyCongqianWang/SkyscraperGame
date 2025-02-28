@@ -108,12 +108,12 @@ class GameNode
                 else
                 {
                     byte lb = 1;
-                    while (lb < Size && !GridInvalidValues[i, j].Contains(lb))
+                    while (lb < Size && GridInvalidValues[i, j].Contains(lb))
                     {
                         lb++;
                     }
                     byte ub = (byte)Size;
-                    while (!GridInvalidValues[i, j].Contains(lb) && ub > 1)
+                    while (ub > 1 && GridInvalidValues[i, j].Contains(lb))
                     {
                         ub--;
                     }
