@@ -8,15 +8,11 @@ public class GameEngine
 
     private readonly InstanceGenerator instanceGenerator;
     private readonly ConstraintChecker constraintChecker;
-    private readonly InsertValidator insertValidator;
-    private readonly ValueInserter valueInserter;
 
     public GameEngine()
     {
         instanceGenerator = new();
         constraintChecker = new();
-        insertValidator = new();
-        valueInserter = new();
 
         StartNewGame(new InstanceGenerationOptions());
     }
@@ -27,35 +23,53 @@ public class GameEngine
         gameState = instanceGenerator.GenerateNewGame(options);
     }
 
-    public GameState GetState()
+    public GameStateViewModel GetState()
     {
-        return gameState;
+        return new(gameState);
     }
 
     public bool TryUndoLast()
     {
-        gameState.GameStatistics.IncrementUndos();
+        GameNode currentNode = gameState.GameNodes.Peek();
+        if ( currentNode.IsSolved)
+            return false;
         if (gameState.GameNodes.Count == 1)
             return false;
+        gameState.GameStatistics.IncrementUndos();
         _ = gameState.GameNodes.Pop();
+        if (currentNode.IsInfeasible)
+        {
+            GameNode parentNode = gameState.GameNodes.Peek();
+            (int i, int j) = currentNode.LastInsertPosition;
+            parentNode.AddInvalidValue(i, j, currentNode.GridValues[i, j]);
+        }
         return true;
     }
 
     public bool TryInsertValue((int, int) position, byte value)
     {
-        gameState.GameStatistics.IncrementInserts();
-        GameNodes currentNode = gameState.GameNodes.Peek();
-        if (!insertValidator.ValidateInsert(currentNode, position, value))
+        GameNode currentNode = gameState.GameNodes.Peek();
+        if (currentNode.IsSolved)
             return false;
-        GameNodes nextNode = currentNode.Clone();
-        valueInserter.InsertValue(nextNode, position, value);
+        GameNode? nextNode = currentNode.TryCreateChild(position, value);
+        if (nextNode == null)
+            return false;
+        gameState.GameStatistics.IncrementInserts();
         gameState.GameNodes.Push(nextNode);
         return true;
     }
-    public void CheckConstraint(int constraintIndex)
+    public bool TryCheckConstraint(int constraintIndex)
     {
+        GameNode currentNode = gameState.GameNodes.Peek();
+        if (currentNode.IsSolved)
+            return false;
+        if (currentNode.IsInfeasible)
+            return false;
+        if (constraintIndex < 0 || constraintIndex >= gameState.GameConstraints.Constraints.Length)
+            return false;
         gameState.GameStatistics.IncrementChecks();
-        GameNodes currentState = gameState.GameNodes.Peek();
-        constraintChecker.CheckConstraint(currentState, constraintIndex);
+        currentNode.CheckConstraint(
+            gameState.GameConstraints.Constraints[constraintIndex], constraintChecker);
+        return true;
     }
 }

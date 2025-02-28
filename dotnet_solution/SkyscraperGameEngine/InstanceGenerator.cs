@@ -3,10 +3,11 @@ using System.Data;
 
 namespace SkyscraperGameEngine;
 
+using GridContraintMap = ImmutableDictionary<(int, int), ImmutableArray<GameConstraint>>;
+
 class InstanceGenerator
 {
     private Random random = new();
-    private readonly ValueInserter inserter = new();
 
     public GameState GenerateNewGame(InstanceGenerationOptions options)
     {
@@ -15,8 +16,8 @@ class InstanceGenerator
         byte[,] latinSquare = GenerateLatinSquare(options.Size);
         GameConstraints constraints = CreateConstraints(options, latinSquare);
         RemoveRandomValuesFromGrid(options, latinSquare);
-        GameNodes initialState = CreateInitialState(latinSquare);
-        Stack<GameNodes> gridStates = new();
+        GameNode initialState = GameNode.CreateRootNode(constraints.GridConstraintMap, latinSquare);
+        Stack<GameNode> gridStates = new();
         gridStates.Push(initialState);
         return new(constraints, gridStates, new());
     }
@@ -31,9 +32,9 @@ class InstanceGenerator
 
         if (options.AllowInfeasible)
         {
-            int[] removeColumn = [.. Enumerable.Range(0, 9)];
+            int[] removeColumn = [.. Enumerable.Range(0, size)];
             random.Shuffle(removeColumn);
-            foreach (int row in Enumerable.Range(0, 9))
+            foreach (int row in Enumerable.Range(0, size))
             {
                 latinSquare[row, removeColumn[row]] = 0;
                 allPositions.Remove((row, removeColumn[row]));
@@ -45,7 +46,7 @@ class InstanceGenerator
 
         (int, int)[] removePositions = [.. allPositions];
         random.Shuffle(removePositions);
-        foreach ((int i, int j) in removePositions.Take(size*size - numKeep))
+        foreach ((int i, int j) in removePositions.Take(size * size - numKeep))
         {
             latinSquare[i, j] = 0;
         }
@@ -99,19 +100,20 @@ class InstanceGenerator
             modifyIndeces = random.GetItems(keepIndeces, 1);
 
         GameConstraint[] constraints = new GameConstraint[size * 4];
-        List<GameConstraint>[,] mapping = new List<GameConstraint>[size, size];
+
+        Dictionary<(int, int), List<GameConstraint>> gridContraintMap = [];
         foreach (int col in Enumerable.Range(0, size))
         {
             foreach (int row in Enumerable.Range(0, size))
             {
-                mapping[row, col] = [];
+                gridContraintMap[(row, col)] = [];
             }
         }
         for (int constraintIdx = 0; constraintIdx < 4 * size; constraintIdx++)
         {
             if (!keepIndeces.Contains(constraintIdx))
             {
-                constraints[constraintIdx] = new GameConstraint(0, []);
+                constraints[constraintIdx] = new GameConstraint(constraintIdx, 0, []);
                 continue;
             }
             ImmutableArray<(int, int)> gridPositions;
@@ -146,19 +148,15 @@ class InstanceGenerator
                 constraintValue = Math.Min(constraintValue, size);
                 constraintValue = Math.Max(constraintValue, 1);
             }
-            constraints[constraintIdx] = new GameConstraint((byte)constraintValue, gridPositions);
-            foreach ((int i, int j) in gridPositions)
-                mapping[i, j].Add(constraints[i]);
+            constraints[constraintIdx] = new GameConstraint(constraintIdx, (byte)constraintValue, gridPositions);
+            foreach (var pos in gridPositions)
+                gridContraintMap[pos].Add(constraints[constraintIdx]);
+
         }
-        ImmutableArray<GameConstraint>[,] immutableMapping = new ImmutableArray<GameConstraint>[size, size];
-        foreach (int col in Enumerable.Range(0, size))
-        {
-            foreach (int row in Enumerable.Range(0, size))
-            {
-                immutableMapping[row, col] = [.. mapping[row, col]];
-            }
-        }
-        return new([.. constraints], immutableMapping);
+        GridContraintMap.Builder mappingBuilder = ImmutableDictionary.CreateBuilder<(int, int), ImmutableArray<GameConstraint>>();
+        foreach (var (key, value) in gridContraintMap)
+            mappingBuilder.Add(key, [.. value]);
+        return new([.. constraints], mappingBuilder.ToImmutableDictionary());
     }
 
     private int CalculateConstraintValue(byte[,] latinSquare, ImmutableArray<(int, int)> gridPositions)
@@ -174,30 +172,5 @@ class InstanceGenerator
             }
         }
         return value;
-    }
-
-    private GameNodes CreateInitialState(byte[,] initialGrid)
-    {
-        int size = initialGrid.GetLength(0);
-        byte[,] emptyGrid = new byte[size, size];
-        HashSet<byte>[,] invalidValues = new HashSet<byte>[size, size];
-        for (int i = 0; i < size; i++)
-        {
-            for (int j = 0; j < size; j++)
-            {
-                invalidValues[i, j] = [];
-            }
-        }
-        GameNodes initialState = new(size, false, false, 0, emptyGrid, invalidValues);
-        for (int i = 0; i < size; i++)
-        {
-            for (int j = 0; j < size; j++)
-            {
-                if (initialGrid[i, j] == 0)
-                    continue;
-                inserter.InsertValue(initialState, (i, j), initialGrid[i, j]);
-            }
-        }
-        return initialState;
     }
 }

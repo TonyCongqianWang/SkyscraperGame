@@ -2,8 +2,10 @@
 
 namespace SkyscraperGameEngine;
 
-public class GameConstraints(ImmutableArray<GameConstraint> constraints, ImmutableArray<GameConstraint>[,] constraintsPerGridCell)
+using GridContraintMap = ImmutableDictionary<(int, int), ImmutableArray<GameConstraint>>;
+
+class GameConstraints(ImmutableArray<GameConstraint> constraints, GridContraintMap gridConstraintMap)
 {
     public ImmutableArray<GameConstraint> Constraints { get; } = constraints;
-    public ImmutableArray<GameConstraint>[,] ContraintsPerGridCell { get; } = constraintsPerGridCell;
+    public GridContraintMap GridConstraintMap { get; } = gridConstraintMap;
 }

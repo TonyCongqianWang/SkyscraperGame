@@ -2,19 +2,17 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 
+using SkyscraperGameEngine;
+
 namespace SkyscraperGameGui;
 
-class GridRenderer
+class GridRenderer(
+    GridButtonCallbackFactory cellDialogCallbackFactory,
+    ConstraintCheckHandler constraintDialogCallbackFactory)
 {
     private int gridSize = 0;
-    private Func<Grid, (int, int), Action> createCellDialogCallback;
 
-    public GridRenderer(Func<Grid, (int, int), Action> createCellDialogCallback)
-    {
-        this.createCellDialogCallback = createCellDialogCallback;
-    }
-
-    public void Render(Grid gameGrid, GameStateModel model)
+    public void Render(Grid gameGrid, GameStateViewModel model)
     {
         if (gridSize != model.Size)
         {
@@ -27,9 +25,12 @@ class GridRenderer
             var topTextBlock = (TextBlock)gameGrid.FindName($"constr_box_top_{i}");
             if (topTextBlock != null)
             {
-                topTextBlock.Text = model.TopValues[i].ToString();
-                if (model.TopValuesCheckStatus[i])
-                    topTextBlock.Foreground = Brushes.Green;
+                if (model.TopValues[i] > 0)
+                    topTextBlock.Text = model.TopValues[i].ToString();
+                else
+                    topTextBlock.Text = "";
+                if (!model.TopValueNeedsCheckArray[i])
+                    topTextBlock.Foreground = Brushes.LimeGreen;
                 else
                     topTextBlock.Foreground = Brushes.Orange;
             }
@@ -37,9 +38,12 @@ class GridRenderer
             var bottomTextBlock = (TextBlock)gameGrid.FindName($"constr_box_bottom_{i}");
             if (bottomTextBlock != null)
             {
-                bottomTextBlock.Text = model.BottomValues[i].ToString();
-                if (model.BottomValuesCheckStatus[i])
-                    bottomTextBlock.Foreground = Brushes.Green;
+                if (model.BottomValues[i] > 0)
+                    bottomTextBlock.Text = model.BottomValues[i].ToString();
+                else
+                    bottomTextBlock.Text = "";
+                if (!model.BottomValueNeedsCheckArray[i])
+                    bottomTextBlock.Foreground = Brushes.LimeGreen;
                 else
                     bottomTextBlock.Foreground = Brushes.Orange;
             }
@@ -47,9 +51,12 @@ class GridRenderer
             var leftTextBlock = (TextBlock)gameGrid.FindName($"constr_box_left_{i}");
             if (leftTextBlock != null)
             {
-                leftTextBlock.Text = model.LeftValues[i].ToString();
-                if (model.LeftValuesCheckStatus[i])
-                    leftTextBlock.Foreground = Brushes.Green;
+                if (model.LeftValues[i] > 0)
+                    leftTextBlock.Text = model.LeftValues[i].ToString();
+                else
+                    leftTextBlock.Text = "";
+                if (!model.LeftValueNeedsCheckArray[i])
+                    leftTextBlock.Foreground = Brushes.LimeGreen;
                 else
                     leftTextBlock.Foreground = Brushes.Orange;
             }
@@ -57,9 +64,12 @@ class GridRenderer
             var rightTextBlock = (TextBlock)gameGrid.FindName($"constr_box_right_{i}");
             if (rightTextBlock != null)
             {
-                rightTextBlock.Text = model.RightValues[i].ToString();
-                if (model.RightValuesCheckStatus[i])
-                    rightTextBlock.Foreground = Brushes.Green;
+                if (model.RightValues[i] > 0)
+                    rightTextBlock.Text = model.RightValues[i].ToString();
+                else
+                    rightTextBlock.Text = "";
+                if (!model.RightValueNeedsCheckArray[i])
+                    rightTextBlock.Foreground = Brushes.LimeGreen;
                 else
                     rightTextBlock.Foreground = Brushes.Orange;
             }
@@ -84,18 +94,17 @@ class GridRenderer
                     {
                         for (int l = 0; l < 3; l++)
                         {
-                            var textBlock = subGrid.Children
+                            if (subGrid.Children
                                 .Cast<UIElement>()
-                                .FirstOrDefault(e => Grid.GetRow(e) == k && Grid.GetColumn(e) == l)
-                                as TextBlock;
-
-                            if (textBlock != null)
+                                .FirstOrDefault(e =>
+                                    Grid.GetRow(e) == k && Grid.GetColumn(e) == l)
+                                is TextBlock textBlock)
                             {
                                 textBlock.Opacity = 1;
                                 textBlock.Text = number <= model.Size ? number.ToString() : "";
                                 if (model.GridValues[i, j] > 0 || number > model.Size)
                                     textBlock.Opacity = 0;
-                                else if (!model.GridValueValidities[i, j, number - 1])
+                                else if (!model.ValidInsertionsArray[i, j, number - 1])
                                     textBlock.Foreground = Brushes.Gray;
                                 else
                                     textBlock.Foreground = Brushes.Black;
@@ -169,7 +178,9 @@ class GridRenderer
                         Opacity = 0,
                         Background = Brushes.Transparent
                     };
-                    button.Click += (sender, e) => { /* Event handler code */ };
+                    Action callback = constraintDialogCallbackFactory
+                        .CreateButtonCallback(position, size);
+                    button.Click += (sender, e) => { callback(); };
                     gameGrid.Children.Add(button);
                     Grid.SetRow(button, i);
                     Grid.SetColumn(button, j);
@@ -264,7 +275,7 @@ class GridRenderer
                     Opacity = 0,
                     Background = Brushes.Transparent
                 };
-                Action callback = createCellDialogCallback(subGrid, (i, j));
+                Action callback = cellDialogCallbackFactory.CreateCallback(subGrid, (i, j));
                 button.Click += (sender, e) => { callback(); };
                 innerGrid.Children.Add(button);
                 Grid.SetRow(button, i);

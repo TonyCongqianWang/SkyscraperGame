@@ -14,42 +14,27 @@ public partial class MainWindow : Window
     readonly GridRenderer renderer;
     readonly InfoRenderer infoRenderer;
     readonly GameEngine gameEngine = new();
-    readonly MD5 md5 = MD5.Create();
+    readonly NewGameHandler newGameHandler;
+    readonly ConstraintCheckHandler constraintCheckHandler;
 
     public MainWindow()
     {
         InitializeComponent();
-        renderer = new(CreateCellDialogCallback);
+        GridButtonCallbackFactory cellCallbackFactory = new(this, gameEngine);
+        constraintCheckHandler = new(this, gameEngine);
+        renderer = new(cellCallbackFactory, constraintCheckHandler);
         infoRenderer = new(PuzzleStatusLabel,
                            CurrentDepthLabel,
                            SolvingTimeLabel,
                            MovesValuesLabel);
         gameEngine.GetState();
-        RenderNewGame();
-    }
-    public Action CreateCellDialogCallback(Grid cellGrid, (int, int) position)
-    {
-        return () =>
-        {
-            Point gridCenter = GameGrid.PointToScreen(new Point(GameGrid.ActualWidth / 2, GameGrid.ActualHeight / 2));
-            Action<int> digitCallback = (digit) =>
-            {
-                gameEngine.TryInsertValue(position, (byte)digit);
-                GameStateModel gameStateModel = new(gameEngine.GetState());
-                RenderUpdate(gameStateModel);
-            };
-            CellDialog cellDialog = new(cellGrid, digitCallback)
-            {
-                Owner = this,
-                WindowStartupLocation = WindowStartupLocation.Manual
-            };
-            cellDialog.Loaded += (s, e) =>
-            {
-                cellDialog.Left = gridCenter.X - (cellDialog.ActualWidth / 2);
-                cellDialog.Top = gridCenter.Y - (cellDialog.ActualHeight / 2);
-            };
-            cellDialog.ShowDialog();
-        };
+        newGameHandler = new(gameEngine,
+                             RngSeedBox,
+                             GridSizeBox,
+                             GridFillPercentBox,
+                             ConstrFillPercentBox,
+                             AllowInFeasibleCheckbox);
+        RenderGame(resetTimer: true);
     }
 
     private void NewGameButton_Click(object sender, RoutedEventArgs e)
@@ -62,42 +47,26 @@ public partial class MainWindow : Window
         dialog.ShowDialog();
         if (dialog.DialogResult == true)
         {
-            byte[] seedBytes = Encoding.UTF8.GetBytes(RngSeedBox.Text);
-            int seed = Math.Abs(BitConverter.ToInt32(md5.ComputeHash(seedBytes), 0));
-            if (RngSeedBox.Text == "")
-                seed = -1;
-            InstanceGenerationOptions options = new()
-            {
-                Size = 4,
-                RandomSeed = seed,
-                AllowInfeasible = AllowInFeasibleCheckbox.IsChecked == true
-            };
-            if (double.TryParse(GridFillPercentBox.Text, out double gridFillPercent))
-                options.GridFillRate = gridFillPercent / 100;
-            if (double.TryParse(ConstrFillPercentBox.Text, out double constrFillPercent))
-                options.ConstraintFillRate = gridFillPercent / 100;
-            gameEngine.StartNewGame(options);
-            RenderNewGame();
+            newGameHandler.SendNewGameRequest();
+            RenderGame(resetTimer: true);
         }
     }
 
     private void UnsetButton_Click(object sender, RoutedEventArgs e)
     {
         gameEngine.TryUndoLast();
-        GameStateModel gameStateModel = new(gameEngine.GetState());
-        RenderUpdate(gameStateModel);
+        RenderGame();
     }
 
-    private void RenderUpdate(GameStateModel gameStateModel)
+    public void RenderGame(bool resetTimer=false)
     {
-        infoRenderer.UpdateInfo(gameStateModel);
+        GameStateViewModel gameStateModel = gameEngine.GetState();
+        infoRenderer.RenderInfo(gameStateModel, resetTimer);
         renderer.Render(GameGrid, gameStateModel);
     }
 
-    private void RenderNewGame()
+    private void CheckAllButton_Click(object sender, RoutedEventArgs e)
     {
-        GameStateModel gameStateModel = new(gameEngine.GetState());
-        infoRenderer.NewGame(gameStateModel);
-        renderer.Render(GameGrid, gameStateModel);
+        constraintCheckHandler.ExecuteCheckAll();
     }
 }

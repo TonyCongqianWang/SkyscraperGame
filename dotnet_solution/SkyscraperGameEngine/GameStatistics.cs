@@ -1,6 +1,6 @@
 ﻿namespace SkyscraperGameEngine;
 
-public class GameStatistics
+class GameStatistics
 {
     public UInt128 NumInserts { get; private set; } = 0;
     public UInt128 NumUndos { get; private set; } = 0;
@@ -13,11 +13,11 @@ public class GameStatistics
 
     public void IncrementUndos()
     {
-        NumInserts++;
+        NumUndos++;
     }
 
     public void IncrementChecks()
     {
-        NumInserts++;
+        NumChecks++;
     }
 }

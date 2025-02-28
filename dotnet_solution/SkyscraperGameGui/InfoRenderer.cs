@@ -1,6 +1,9 @@
-﻿using System.Windows.Controls;
+﻿using System.Diagnostics;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+
+using SkyscraperGameEngine;
 
 namespace SkyscraperGameGui;
 
@@ -11,7 +14,7 @@ class InfoRenderer
     private readonly Label solvingTimeLabel;
     private readonly TextBlock movesValues;
     private readonly DispatcherTimer timer;
-    private DateTime startTime = DateTime.Now;
+    private readonly Stopwatch stopwatch = new();
 
     public InfoRenderer(Label puzzleStatusLabel, Label currentDepthLabel, Label solvingTimeLabel, TextBlock movesValues)
     {
@@ -21,36 +24,35 @@ class InfoRenderer
         this.movesValues = movesValues;
         timer = new()
         {
-            Interval = TimeSpan.FromSeconds(1),
+            Interval = TimeSpan.FromMilliseconds(1000),
         };
         timer.Tick += UpdateTime;
+        timer.Start();
     }
 
-    public void NewGame(GameStateModel gameModel)
+    public void RenderInfo(GameStateViewModel gameModel, bool resetTimer=false)
     {
-        StartTimer();
-        UpdateInfo(gameModel);
-    }
-
-    public void UpdateInfo(GameStateModel gameModel)
-    {
+        if (resetTimer)
+            StartTimer();
         UInt128 inserts = gameModel.NumInserts;
         UInt128 checks = gameModel.NumChecks;
         UInt128 unsets = gameModel.NumUnsets;
         if (gameModel.IsSolved)
         {
+            puzzleStatusLabel.Foreground = new SolidColorBrush(Colors.LimeGreen);
             puzzleStatusLabel.Content = "Puzzle Solved!";
             StopTimer();
         }
         else if (gameModel.IsInfeasible)
         {
+            puzzleStatusLabel.Foreground = new SolidColorBrush(Colors.Red);
             if (gameModel.CurrentDepth == 0)
             {
                 StopTimer();
                 puzzleStatusLabel.Content = "Puzzle Infeasible!";
             }
             else
-                puzzleStatusLabel.Content = "Infeasible State...";
+                puzzleStatusLabel.Content = "Infeasible Node...";
         }
         else
         {
@@ -63,25 +65,27 @@ class InfoRenderer
 
     private void UpdateTime(object? sender, EventArgs e)
     {
-        TimeSpan elapsed = DateTime.Now - startTime;
+        TimeSpan elapsed = stopwatch.Elapsed;
+        string format = @"hh\:mm\:ss";
+        if (!stopwatch.IsRunning)
+            format += @"\.ff";
         solvingTimeLabel.Dispatcher.Invoke(() =>
         {
-            solvingTimeLabel.Content = elapsed.ToString(@"hh\:mm\:ss");
+            solvingTimeLabel.Content = elapsed.ToString(format);
         });
     }
 
     private void StartTimer()
     {
-        startTime = DateTime.Now;
-        timer.Start();
+        stopwatch.Restart();
         solvingTimeLabel.Foreground = new SolidColorBrush(Colors.Black);
     }
 
     private void StopTimer()
     {
-        timer.Stop();
-        TimeSpan elapsed = DateTime.Now - startTime;
+        stopwatch.Stop();
+        TimeSpan elapsed = stopwatch.Elapsed;
         solvingTimeLabel.Content = elapsed.ToString(@"hh\:mm\:ss\.ff");
-        solvingTimeLabel.Foreground = new SolidColorBrush(Colors.Green);
+        solvingTimeLabel.Foreground = new SolidColorBrush(Colors.LimeGreen);
     }
 }
