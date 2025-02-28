@@ -1,6 +1,6 @@
 # SkyscraperGame
 
-An offline version of the puzzle game Skyscrapers (see [here](https://www.puzzle-skyscrapers.com/) or [here](https://www.brainbashers.com/skyscrapers.asp) build with C# using WPF for a graphical user interface.
+An offline version of the puzzle game Skyscrapers (see [here](https://www.puzzle-skyscrapers.com/) or [here](https://www.brainbashers.com/skyscrapers.asp)) build with C# using WPF for a graphical user interface.
 
 ![NewGame](images/InProgress.JPG)
 
