@@ -16,6 +16,7 @@ class GridButtonCallbackFactory(MainWindow mainWindow, GameEngine gameEngine)
         void digitCallback(int digit)
         {
             gameEngine.TryInsertValue(position, (byte)digit);
+            mainWindow.Focus();
             mainWindow.RenderGame();
         }
         CellDialog cellDialog = new(cellGrid, digitCallback)

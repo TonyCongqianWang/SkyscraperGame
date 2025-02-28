@@ -1,8 +1,6 @@
-﻿using System.Security.Cryptography;
-using System.Text;
+﻿using SkyscraperGameEngine;
 using System.Windows;
-using System.Windows.Controls;
-using SkyscraperGameEngine;
+using System.Windows.Input;
 
 namespace SkyscraperGameGui;
 
@@ -58,7 +56,7 @@ public partial class MainWindow : Window
         RenderGame();
     }
 
-    public void RenderGame(bool resetTimer=false)
+    public void RenderGame(bool resetTimer = false)
     {
         GameStateViewModel gameStateModel = gameEngine.GetState();
         infoRenderer.RenderInfo(gameStateModel, resetTimer);
@@ -68,5 +66,13 @@ public partial class MainWindow : Window
     private void CheckAllButton_Click(object sender, RoutedEventArgs e)
     {
         constraintCheckHandler.ExecuteCheckAll();
+    }
+
+    private void Window_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Back || e.Key == Key.Delete)
+        {
+            UnsetButton_Click(sender, e);
+        }
     }
 }

@@ -21,9 +21,13 @@ namespace SkyscraperGameGui
         private void CloneAndDisplayGrid(Grid cellGrid)
         {
             string gridXaml = XamlWriter.Save(cellGrid);
-            StringReader stringReader = new StringReader(gridXaml);
+            StringReader stringReader = new(gridXaml);
             XmlReader xmlReader = XmlReader.Create(stringReader);
             Grid clonedGrid = (Grid)XamlReader.Load(xmlReader);
+
+            clonedGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
+            clonedGrid.VerticalAlignment = VerticalAlignment.Stretch;
+            clonedGrid.Margin = new Thickness(0);
 
             OptionsGrid.Children.Clear();
             OptionsGrid.Children.Add(clonedGrid);
@@ -36,11 +40,7 @@ namespace SkyscraperGameGui
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Escape)
-            {
-                CancelButton_Click(sender, e);
-            }
-            else if (e.Key >= Key.D0 && e.Key <= Key.D9)
+            if (e.Key >= Key.D0 && e.Key <= Key.D9)
             {
                 int digit = e.Key - Key.D0;
                 digitCallback(digit);

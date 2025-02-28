@@ -56,6 +56,7 @@ class InfoRenderer
         }
         else
         {
+            puzzleStatusLabel.Foreground = new SolidColorBrush(Colors.Black);
             puzzleStatusLabel.Content = "In Progress...";
         }
         currentDepthLabel.Content = gameModel.CurrentDepth.ToString();

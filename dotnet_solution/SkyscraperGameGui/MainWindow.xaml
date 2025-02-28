@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:SkyscraperGameGui"
         mc:Ignorable="d"
         Title="SkyScraper Puzzle" Height="750" Width="1300"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        KeyDown="Window_KeyDown">
+
     <Grid>
         <Grid HorizontalAlignment="Right" Margin="0,0,65,200" VerticalAlignment="Bottom">
             <Grid.RowDefinitions>
