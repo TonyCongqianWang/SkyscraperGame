@@ -2,7 +2,7 @@
 
 namespace SkyscraperGameGui;
 
-class ConstraintCheckHandler(MainWindow mainWindow, GameEngine gameEngine)
+class ConstraintCheckHandler(MainWindow mainWindow, GameInterface gameEngine)
 {
     public Action CreateButtonCallback(string constraintPosition, int size)
     {

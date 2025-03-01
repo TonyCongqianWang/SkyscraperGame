@@ -11,7 +11,7 @@ public partial class MainWindow : Window
 {
     readonly GridRenderer renderer;
     readonly InfoRenderer infoRenderer;
-    readonly GameEngine gameEngine = new();
+    readonly GameInterface gameEngine = new();
     readonly NewGameHandler newGameHandler;
     readonly ConstraintCheckHandler constraintCheckHandler;
 

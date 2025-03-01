@@ -1,9 +1,8 @@
-﻿using System.Diagnostics;
+﻿using SkyscraperGameEngine;
+using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-
-using SkyscraperGameEngine;
 
 namespace SkyscraperGameGui;
 
@@ -30,7 +29,7 @@ class InfoRenderer
         timer.Start();
     }
 
-    public void RenderInfo(GameStateViewModel gameModel, bool resetTimer=false)
+    public void RenderInfo(GameStateViewModel gameModel, bool resetTimer = false)
     {
         if (resetTimer)
             StartTimer();

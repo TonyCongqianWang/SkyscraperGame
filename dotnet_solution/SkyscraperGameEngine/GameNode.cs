@@ -87,9 +87,9 @@ class GameNode
         return child;
     }
 
-    public void CheckConstraint(GameConstraint constraint, ConstraintChecker checker)
+    public void UpdateConstraintStatus(GameConstraint constraint, bool isSatisfiable)
     {
-        if (checker.IsConstraintSatisfiable(constraint.Value, (byte)Size, getGridValueBounds()))
+        if (isSatisfiable)
         {
             NeedsCheckConstraints.Remove(constraint);
             UpdateSolveStatus();
@@ -98,27 +98,29 @@ class GameNode
         {
             IsInfeasible = true;
         }
-        IEnumerable<(byte, byte)> getGridValueBounds()
+
+    }
+
+    public IEnumerable<(byte, byte)> GetGridValueBounds(IEnumerable<(int, int)> positions)
+    {
+        foreach (var (i, j) in positions)
         {
-            foreach (var (i, j) in constraint.Positions)
+            byte value = GridValues[i, j];
+            if (value > 0)
+                yield return (value, value);
+            else
             {
-                byte value = GridValues[i, j];
-                if (value > 0)
-                    yield return (value, value);
-                else
+                byte lb = 1;
+                while (lb < Size && GridInvalidValues[i, j].Contains(lb))
                 {
-                    byte lb = 1;
-                    while (lb < Size && GridInvalidValues[i, j].Contains(lb))
-                    {
-                        lb++;
-                    }
-                    byte ub = (byte)Size;
-                    while (ub > 1 && GridInvalidValues[i, j].Contains(lb))
-                    {
-                        ub--;
-                    }
-                    yield return (lb, ub);
+                    lb++;
                 }
+                byte ub = (byte)Size;
+                while (ub > 1 && GridInvalidValues[i, j].Contains(lb))
+                {
+                    ub--;
+                }
+                yield return (lb, ub);
             }
         }
     }
@@ -139,12 +141,12 @@ class GameNode
         NumInserted++;
         LastInsertPosition = position;
         GridValues[x, y] = value;
-        for (byte val = 1; val <= Size; val++)
-            GridInvalidValues[x, y].Add(val);
-        for (int row = 0; row < Size; row++)
-            AddInvalidValue(row, y, value);
-        for (int col = 0; col < Size; col++)
-            AddInvalidValue(x, col, value);
+        for (int row_offset = 1; row_offset < Size; row_offset++)
+            AddInvalidValue((x + row_offset) % Size, y, value);
+        for (int col_offset = 1; col_offset < Size; col_offset++)
+            AddInvalidValue(x, (y + col_offset) % Size, value);
+        for (int val_offset = 0; val_offset < Size - 1; val_offset++)
+            AddInvalidValue(x, y, (byte)((value + val_offset) % Size + 1));
         MarkConstraintNeedCheck(position);
     }
 
@@ -191,7 +193,7 @@ class GameNode
 
     internal void AddInvalidValue(int i, int j, byte value)
     {
-        if(GridInvalidValues[i, j].Add(value))
+        if (GridInvalidValues[i, j].Add(value))
         {
             invalidPositionsForValuePerCol[j, value - 1]++;
             invalidPositionsForValuePerRow[i, value - 1]++;

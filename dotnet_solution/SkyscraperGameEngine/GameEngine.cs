@@ -1,45 +1,23 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿namespace SkyscraperGameEngine;
 
-namespace SkyscraperGameEngine;
-
-public class GameEngine
+class GameEngine(GameState initialState)
 {
-    private GameState gameState;
+    public GameState GameState { get; set; } = initialState;
 
-    private readonly InstanceGenerator instanceGenerator;
-    private readonly ConstraintChecker constraintChecker;
-
-    public GameEngine()
-    {
-        instanceGenerator = new();
-        constraintChecker = new();
-
-        StartNewGame(new InstanceGenerationOptions());
-    }
-
-    [MemberNotNull(nameof(gameState))]
-    public void StartNewGame(InstanceGenerationOptions options)
-    {
-        gameState = instanceGenerator.GenerateNewGame(options);
-    }
-
-    public GameStateViewModel GetState()
-    {
-        return new(gameState);
-    }
+    private readonly ConstraintChecker constraintChecker = new();
 
     public bool TryUndoLast()
     {
-        GameNode currentNode = gameState.GameNodes.Peek();
-        if ( currentNode.IsSolved)
+        GameNode currentNode = GameState.GameNodes.Peek();
+        if (currentNode.IsSolved)
             return false;
-        if (gameState.GameNodes.Count == 1)
+        if (GameState.GameNodes.Count == 1)
             return false;
-        gameState.GameStatistics.IncrementUndos();
-        _ = gameState.GameNodes.Pop();
+        GameState.GameStatistics.IncrementUndos();
+        _ = GameState.GameNodes.Pop();
         if (currentNode.IsInfeasible)
         {
-            GameNode parentNode = gameState.GameNodes.Peek();
+            GameNode parentNode = GameState.GameNodes.Peek();
             (int i, int j) = currentNode.LastInsertPosition;
             parentNode.AddInvalidValue(i, j, currentNode.GridValues[i, j]);
         }
@@ -48,28 +26,34 @@ public class GameEngine
 
     public bool TryInsertValue((int, int) position, byte value)
     {
-        GameNode currentNode = gameState.GameNodes.Peek();
+        GameNode currentNode = GameState.GameNodes.Peek();
         if (currentNode.IsSolved)
             return false;
         GameNode? nextNode = currentNode.TryCreateChild(position, value);
         if (nextNode == null)
             return false;
-        gameState.GameStatistics.IncrementInserts();
-        gameState.GameNodes.Push(nextNode);
+        GameState.GameStatistics.IncrementInserts();
+        GameState.GameNodes.Push(nextNode);
         return true;
     }
     public bool TryCheckConstraint(int constraintIndex)
     {
-        GameNode currentNode = gameState.GameNodes.Peek();
+        GameNode currentNode = GameState.GameNodes.Peek();
         if (currentNode.IsSolved)
             return false;
         if (currentNode.IsInfeasible)
             return false;
-        if (constraintIndex < 0 || constraintIndex >= gameState.GameConstraints.Constraints.Length)
+        if (constraintIndex < 0 || constraintIndex >= GameState.GameConstraints.Constraints.Length)
             return false;
-        gameState.GameStatistics.IncrementChecks();
-        currentNode.CheckConstraint(
-            gameState.GameConstraints.Constraints[constraintIndex], constraintChecker);
+        GameState.GameStatistics.IncrementChecks();
+        var constraint = GameState.GameConstraints.Constraints[constraintIndex];
+
+        currentNode.UpdateConstraintStatus(
+            constraint,
+            constraintChecker.IsConstraintSatisfiable(
+                constraint.Value,
+                (byte)GameState.GameSize,
+                currentNode.GetGridValueBounds(constraint.Positions)));
         return true;
     }
 }

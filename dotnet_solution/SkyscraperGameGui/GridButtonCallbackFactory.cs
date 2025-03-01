@@ -1,10 +1,10 @@
 ﻿using SkyscraperGameEngine;
-using System.Windows.Controls;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace SkyscraperGameGui;
 
-class GridButtonCallbackFactory(MainWindow mainWindow, GameEngine gameEngine)
+class GridButtonCallbackFactory(MainWindow mainWindow, GameInterface gameEngine)
 {
     public Action CreateCallback(Grid cellGrid, (int, int) position)
     {

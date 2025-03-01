@@ -1,42 +1,61 @@
-﻿using System.Drawing;
-
-namespace SkyscraperGameEngine;
+﻿namespace SkyscraperGameEngine;
 
 class ConstraintChecker
 {
-    public bool IsConstraintSatisfiable(int constraintValue, byte maxValue, IEnumerable<(byte, byte)> gridValueBounds)
+    public bool IsConstraintSatisfiable(int constraintValue,
+                                               byte maxValue,
+                                               IEnumerable<(byte, byte)> gridValueBounds)
     {
-        int valueLb = 1;
-        int valueLhsUb = 0;
-        byte currentMaxLb = 0;
-        byte currentMaxUb = 0;
+        ConstraintBounds bounds = new(maxValue);
 
         byte index = 0;
         foreach ((byte lb, byte ub) in gridValueBounds)
         {
-            if (ub > currentMaxLb)
+            index++;
+            if (!bounds.TryUpdateBounds(index, lb, ub))
+                break;
+            if (bounds.CheckViolation(constraintValue))
+                return false;
+        }
+        return true;
+    }
+
+    private struct ConstraintBounds(int maximumValue)
+    {
+        public readonly int maximumValue = maximumValue;
+        public int ConstraintValueLb { get; set; } = 1;
+        public readonly int ConstraintValueUb => ConstraintValueUbPartial - CurrentMaxLb + maximumValue;
+        public int ConstraintValueUbPartial { get; set; } = 0;
+        public byte CurrentMaxLb { get; set; } = 0;
+        public byte CurrentMaxUb { get; set; } = 0;
+
+        public readonly bool CheckViolation(int constraintValue)
+        {
+            return (ConstraintValueLb > constraintValue || ConstraintValueUb < constraintValue);
+        }
+
+        public bool TryUpdateBounds(byte index, byte lb, byte ub)
+        {
+            if (CurrentMaxLb == maximumValue)
+                return false;
+            if (ub > CurrentMaxLb)
             {
-                valueLhsUb++;
-                if (lb > currentMaxUb)
+                ConstraintValueUbPartial++;
+                if (lb > CurrentMaxUb)
                 {
-                    currentMaxLb = lb;
-                    currentMaxUb = ub;
-                    if (currentMaxUb < maxValue)
-                        valueLb++;
+                    CurrentMaxLb = lb;
+                    CurrentMaxUb = ub;
+                    if (CurrentMaxUb < maximumValue)
+                        ConstraintValueLb++;
                 }
                 else
                 {
-                    currentMaxLb = Math.Max(currentMaxLb, lb);
-                    currentMaxUb = Math.Max(currentMaxUb, ub);
+                    CurrentMaxLb = Math.Max(CurrentMaxLb, lb);
+                    CurrentMaxUb = Math.Max(CurrentMaxUb, ub);
                 }
             }
-            index++;
-            currentMaxLb = Math.Max(currentMaxLb, index);
-            if (valueLb > constraintValue || valueLhsUb + maxValue - currentMaxLb < constraintValue)
-                return false;
-            if (currentMaxLb == maxValue)
-                break;
+            CurrentMaxLb = Math.Max(CurrentMaxLb, index);
+            return true;
         }
-        return true;
     }
 }

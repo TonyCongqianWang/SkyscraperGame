@@ -6,7 +6,7 @@ using System.Windows.Controls;
 namespace SkyscraperGameGui;
 
 internal class NewGameHandler(
-    GameEngine gameEngine,
+    GameInterface gameEngine,
     TextBox rngSeedBox,
     TextBox gridSizeBox,
     TextBox gridFillPercentBox,

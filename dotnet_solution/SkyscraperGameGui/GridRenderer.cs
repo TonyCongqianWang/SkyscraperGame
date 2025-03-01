@@ -1,8 +1,7 @@
-﻿using System.Windows;
+﻿using SkyscraperGameEngine;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-
-using SkyscraperGameEngine;
 
 namespace SkyscraperGameGui;
 
@@ -121,7 +120,7 @@ class GridRenderer(
                         cellButton?.SetValue(UIElement.IsEnabledProperty, true);
                         textBox.Text = "";
                     }
-                    if(model.IsInfeasible)
+                    if (model.IsInfeasible)
                         cellButton?.SetValue(UIElement.IsEnabledProperty, false);
                     textBox.Background = Brushes.White;
                 }
@@ -162,7 +161,7 @@ class GridRenderer(
             if (lastSetTextBox != null)
             {
                 lastSetTextBox.Background = Brushes.Beige;
-                if(model.IsInfeasible)
+                if (model.IsInfeasible)
                     lastSetTextBox.Background = Brushes.DarkGray;
             }
         }
