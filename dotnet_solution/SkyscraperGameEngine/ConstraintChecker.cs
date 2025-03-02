@@ -6,16 +6,61 @@ class ConstraintChecker
                                                byte maxValue,
                                                IEnumerable<(byte, byte)> gridValueBounds)
     {
+        return IsConstraintSatisfiableWithBounds(constraintValue, maxValue, gridValueBounds);
+    }
+
+    public int CalculateConstraintValue(IEnumerable<byte> gridValues)
+    {
+        int cValue = 0;
+        int currentMax = 0;
+        foreach (byte value in gridValues)
+        {
+            if (value > currentMax)
+            {
+                currentMax = value;
+                cValue++;
+            }
+        }
+        return cValue;
+    }
+
+    public (int cValLb, int cValUb) CalculateConstraintBounds(
+        IEnumerable<(byte, byte)> gridValueBounds,
+        byte maxValue)
+    {
         ConstraintBounds bounds = new(maxValue);
 
+        int cValLb = 1;
+        int cValUb = maxValue;
         byte index = 0;
         foreach ((byte lb, byte ub) in gridValueBounds)
         {
             index++;
-            if (!bounds.TryUpdateBounds(index, lb, ub))
-                break;
+            bounds.UpdateBounds(index, lb, ub);
+            cValLb = Math.Max(cValLb, bounds.ConstraintValueLb);
+            cValUb = Math.Min(cValUb, bounds.ConstraintValueUb);
+        }
+        return (cValLb, cValUb);
+    }
+
+    private static bool IsConstraintSatisfiableWithBounds(
+        int constraintValue,
+        byte maxValue,
+        IEnumerable<(byte, byte)> gridValueBounds)
+    {
+        ConstraintBounds bounds = new(maxValue);
+
+        if (constraintValue == 0)
+            return true;
+        byte index = 0;
+        foreach ((byte lb, byte ub) in gridValueBounds)
+        {
+            index++;
+            bounds.UpdateBounds(index, lb, ub);
             if (bounds.CheckViolation(constraintValue))
                 return false;
+            if (bounds.ReachedMaxValue())
+                break;
         }
         return true;
     }
@@ -34,10 +79,8 @@ class ConstraintChecker
             return (ConstraintValueLb > constraintValue || ConstraintValueUb < constraintValue);
         }
 
-        public bool TryUpdateBounds(byte index, byte lb, byte ub)
+        public void UpdateBounds(byte index, byte lb, byte ub)
         {
-            if (CurrentMaxLb == maximumValue)
-                return false;
             if (ub > CurrentMaxLb)
             {
                 ConstraintValueUbPartial++;
@@ -55,7 +98,11 @@ class ConstraintChecker
                 }
             }
             CurrentMaxLb = Math.Max(CurrentMaxLb, index);
-            return true;
+        }
+
+        public bool ReachedMaxValue()
+        {
+            return CurrentMaxLb == maximumValue;
         }
     }
 }

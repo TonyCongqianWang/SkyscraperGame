@@ -71,7 +71,7 @@ public record class GameStateViewModel
             {
                 for (int val = 1; val <= Size; val++)
                 {
-                    ValidInsertionsArray[i, j, val - 1] = !currendNode.GridInvalidValues[i, j].Contains((byte)val);
+                    ValidInsertionsArray[i, j, val - 1] = currendNode.GridValidValues[i, j].Contains((byte)val);
                 }
             }
         }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Drawing;
 
 namespace SkyscraperGameEngine;
 
@@ -13,55 +14,61 @@ class GameNode
     public int NumInserted { get; private set; }
     public (int, int) LastInsertPosition { get; private set; } = (-1, -1);
     public byte[,] GridValues { get; private set; }
-    public HashSet<byte>[,] GridInvalidValues { get; }
+    public HashSet<byte>[,] GridValidValues { get; }
     public HashSet<GameConstraint> NeedsCheckConstraints { get; }
+    readonly HashSet<int>[,] validPositionsForValuePerCol;
+    readonly HashSet<int>[,] validPositionsForValuePerRow;
     readonly GridContraintMap gridContraintMap;
-    readonly byte[,] invalidPositionsForValuePerCol;
-    readonly byte[,] invalidPositionsForValuePerRow;
 
     private GameNode(int size,
                      bool isInfeasible,
                      int numInserted,
                      byte[,] gridValues,
-                     HashSet<byte>[,] gridInvalidValues,
+                     HashSet<byte>[,] gridValidValues,
                      HashSet<GameConstraint> needsCheckConstraints,
                      GridContraintMap gridContraintMap,
-                     byte[,] invalidPositionsForValuePerCol,
-                     byte[,] invalidPositionsForValuePerRow)
+                     HashSet<int>[,] validPositionsForValuePerCol,
+                     HashSet<int>[,] validPositionsForValuePerRow)
     {
         Size = size;
         IsInfeasible = isInfeasible;
         NumInserted = numInserted;
         NumCells = size * size;
         GridValues = gridValues;
-        GridInvalidValues = gridInvalidValues;
+        GridValidValues = gridValidValues;
         NeedsCheckConstraints = needsCheckConstraints;
         this.gridContraintMap = gridContraintMap;
-        this.invalidPositionsForValuePerCol = invalidPositionsForValuePerCol;
-        this.invalidPositionsForValuePerRow = invalidPositionsForValuePerRow;
+        this.validPositionsForValuePerCol = validPositionsForValuePerCol;
+        this.validPositionsForValuePerRow = validPositionsForValuePerRow;
     }
 
     static public GameNode CreateRootNode(GridContraintMap gridContraintMap, byte[,] initialGrid)
     {
         int size = initialGrid.GetLength(0);
         byte[,] emptyGrid = new byte[size, size];
-        HashSet<byte>[,] invalidValues = new HashSet<byte>[size, size];
+        HashSet<byte>[,] validValues = new HashSet<byte>[size, size];
+        HashSet<int>[,] validPosCol = new HashSet<int>[size, size];
+        HashSet<int>[,] validPosRow = new HashSet<int>[size, size];
         for (int i = 0; i < size; i++)
         {
             for (int j = 0; j < size; j++)
             {
-                invalidValues[i, j] = [];
+                validValues[i, j] = [.. Enumerable.Range(0, size).Select(n => (byte)(n + 1))];
+                validPosCol[i, j] = [.. Enumerable.Range(0, size)];
+                validPosRow[i, j] = [.. Enumerable.Range(0, size)];
             }
         }
+
+
         GameNode rootNode = new(size,
                                 false,
                                 0,
                                 emptyGrid,
-                                invalidValues,
+                                validValues,
                                 [],
                                 gridContraintMap,
-                                new byte[size, size],
-                                new byte[size, size]);
+                                validPosCol,
+                                validPosRow);
         for (int i = 0; i < size; i++)
         {
             for (int j = 0; j < size; j++)
@@ -110,16 +117,8 @@ class GameNode
                 yield return (value, value);
             else
             {
-                byte lb = 1;
-                while (lb < Size && GridInvalidValues[i, j].Contains(lb))
-                {
-                    lb++;
-                }
-                byte ub = (byte)Size;
-                while (ub > 1 && GridInvalidValues[i, j].Contains(lb))
-                {
-                    ub--;
-                }
+                byte lb = GridValidValues[i, j].Min();
+                byte ub = GridValidValues[i, j].Max();
                 yield return (lb, ub);
             }
         }
@@ -132,7 +131,7 @@ class GameNode
         (int x, int y) = position;
         if (x >= Size || y >= Size || x < 0 || y < 0)
             return false;
-        return !GridInvalidValues[x, y].Contains(value);
+        return GridValidValues[x, y].Contains(value);
     }
 
     private void InsertValue((int, int) position, byte value)
@@ -167,16 +166,16 @@ class GameNode
     {
         byte[,] newGridValues = new byte[Size, Size];
         Array.Copy(GridValues, newGridValues, NumCells);
-        byte[,] newColValidCounter = new byte[Size, Size];
-        Array.Copy(invalidPositionsForValuePerCol, newColValidCounter, NumCells);
-        byte[,] newRowValidCounter = new byte[Size, Size];
-        Array.Copy(invalidPositionsForValuePerRow, newRowValidCounter, NumCells);
         HashSet<byte>[,] gridValidValues = new HashSet<byte>[Size, Size];
+        HashSet<int>[,] validPosCol = new HashSet<int>[Size, Size];
+        HashSet<int>[,] validPosRow = new HashSet<int>[Size, Size];
         for (int i = 0; i < Size; i++)
         {
             for (int j = 0; j < Size; j++)
             {
-                gridValidValues[i, j] = [.. GridInvalidValues[i, j]];
+                gridValidValues[i, j] = [.. GridValidValues[i, j]];
+                validPosCol[i, j] = [.. validPositionsForValuePerCol[i, j]];
+                validPosRow[i, j] = [.. validPositionsForValuePerRow[i, j]];
             }
         }
         HashSet<GameConstraint> needsCheckConstrCpy = [.. NeedsCheckConstraints];
@@ -187,19 +186,19 @@ class GameNode
                             gridValidValues,
                             needsCheckConstrCpy,
                             gridContraintMap,
-                            newColValidCounter,
-                            newRowValidCounter);
+                            validPosCol,
+                            validPosRow);
     }
 
     internal void AddInvalidValue(int i, int j, byte value)
     {
-        if (GridInvalidValues[i, j].Add(value))
+        if (GridValidValues[i, j].Remove(value))
         {
-            invalidPositionsForValuePerCol[j, value - 1]++;
-            invalidPositionsForValuePerRow[i, value - 1]++;
-            if (GridInvalidValues[i, j].Count == Size ||
-                invalidPositionsForValuePerCol[j, value - 1] == Size ||
-                invalidPositionsForValuePerRow[j, value - 1] == Size)
+            validPositionsForValuePerCol[j, value - 1].Remove(i);
+            validPositionsForValuePerRow[i, value - 1].Remove(j);
+            if (GridValidValues[i, j].Count == 0 ||
+                validPositionsForValuePerCol[j, value - 1].Count == 0 ||
+                validPositionsForValuePerRow[j, value - 1].Count == 0)
                 IsInfeasible = true;
         }
     }
