@@ -144,7 +144,7 @@ class GridRenderer(
                                 if (model.GridValues[i, j] > 0 || number > model.Size)
                                     textBlock.Opacity = 0;
                                 else if (!model.ValidInsertionsArray[i, j, number - 1])
-                                    textBlock.Foreground = Brushes.Gray;
+                                    textBlock.Foreground = Brushes.LightGray;
                                 else
                                     textBlock.Foreground = Brushes.Black;
                                 number++;
