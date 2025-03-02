@@ -2,13 +2,12 @@
 
 class LatinSquareGenerator
 {
-    private readonly GameConstraintsFactory constraintsFactory = new();
+    private readonly Solver solver = new();
 
     public byte[,] GenerateLatinSquare(int size, Random rng)
     {
         int[] permutation = [.. Enumerable.Range(0, size)];
-        rng.Shuffle(permutation);
-        byte[,] latinSquare = GetInitialSquare(size, permutation);
+        byte[,] latinSquare = GetInitialSquare(size, permutation, rng);
         rng.Shuffle(permutation);
         ReorderColumns(size, permutation, latinSquare);
         rng.Shuffle(permutation);
@@ -49,28 +48,27 @@ class LatinSquareGenerator
             for (int i = 0; i < size; i++)
             {
                 byte oldval = latinSquare[j, i];
+                if (oldval == 0)
+                    break;
                 latinSquare[j, i] = (byte)(permutation[oldval - 1] + 1);
             }
         }
     }
 
-    private byte[,] GetInitialSquare(int size, int[] permutation)
+    private byte[,] GetInitialSquare(int size, int[] permutation, Random rng)
     {
         byte[,] latinSquare = new byte[size, size];
+        rng.Shuffle(permutation);
 
         for (int i = 0; i < size; i++)
         {
-            for (int j = 0; j < size; j++)
-            {
-                int col = (j + permutation[i]) % size;
-                latinSquare[i, col] = (byte)(j + 1);
-            }
+            int col = permutation[i];
+            latinSquare[i, col] = 1;
         }
-        GameConstraints constraints = constraintsFactory.CreateEmptyConstraints(latinSquare);
+        GameConstraints constraints = GameConstraintsFactory.CreateEmptyConstraints(latinSquare);
         var rootNode = GameNode.CreateRootNode(constraints.GridConstraintMap, latinSquare);
         GameState gameState = new(constraints, rootNode);
-        
-
-        return latinSquare;
+        solver.SolvePuzzle(gameState, rng);
+        return gameState.GameNodes.Peek().GridValues;
     }
 }

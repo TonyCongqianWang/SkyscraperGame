@@ -61,7 +61,7 @@ class GameNode
 
 
         GameNode rootNode = new(size,
-                                false,
+                                size == 0,
                                 0,
                                 emptyGrid,
                                 validValues,
@@ -136,17 +136,21 @@ class GameNode
 
     private void InsertValue((int, int) position, byte value)
     {
-        (int x, int y) = position;
+        (int y, int x) = position;
         NumInserted++;
         LastInsertPosition = position;
-        GridValues[x, y] = value;
+        GridValues[y, x] = value;
         for (int row_offset = 1; row_offset < Size; row_offset++)
-            AddInvalidValue((x + row_offset) % Size, y, value);
+            AddInvalidValue((y + row_offset) % Size, x, value);
         for (int col_offset = 1; col_offset < Size; col_offset++)
-            AddInvalidValue(x, (y + col_offset) % Size, value);
+            AddInvalidValue(y, (x + col_offset) % Size, value);
         for (int val_offset = 0; val_offset < Size - 1; val_offset++)
-            AddInvalidValue(x, y, (byte)((value + val_offset) % Size + 1));
+            AddInvalidValue(y, x, (byte)((value + val_offset) % Size + 1));
+        GridValidValues[y, x].Remove(value);
+        validPositionsForValuePerRow[y, value - 1].Remove(x);
+        validPositionsForValuePerCol[x, value - 1].Remove(y);
         MarkConstraintNeedCheck(position);
+        UpdateSolveStatus();
     }
 
     internal void MarkConstraintNeedCheck((int, int) position)
@@ -198,7 +202,7 @@ class GameNode
             validPositionsForValuePerRow[i, value - 1].Remove(j);
             if (GridValidValues[i, j].Count == 0 ||
                 validPositionsForValuePerCol[j, value - 1].Count == 0 ||
-                validPositionsForValuePerRow[j, value - 1].Count == 0)
+                validPositionsForValuePerRow[i, value - 1].Count == 0)
                 IsInfeasible = true;
         }
     }

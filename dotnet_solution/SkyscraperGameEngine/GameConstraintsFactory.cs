@@ -8,11 +8,22 @@ class GameConstraintsFactory
 {
     private readonly ConstraintChecker checker = new();
 
-    public GameConstraints CreateEmptyConstraints(byte[,] grid)
+    static public GameConstraints CreateEmptyConstraints(byte[,] grid)
     {
         int size = grid.GetLength(0);
-        var enumerator = Array.Empty<int>().Select(i => i).GetEnumerator();
-        return CreateGameConstraints(grid, size, [], [], enumerator);
+        GameConstraint[] constraints = new GameConstraint[size * 4];
+
+        for (int constraintIdx = 0; constraintIdx < 4 * size; constraintIdx++)
+        {
+            constraints[constraintIdx] = new GameConstraint(constraintIdx, 0, []);
+        }
+        IEnumerable<(int, int)> positions = [.. (from i in Enumerable.Range(0, size)
+                             from j in Enumerable.Range(0, size)
+                             select (i, j))];
+        GridContraintMap.Builder mappingBuilder = ImmutableDictionary.CreateBuilder<(int, int), ImmutableArray<GameConstraint>>();
+        foreach (var pos in positions)
+            mappingBuilder.Add(pos, []);
+        return new([.. constraints], mappingBuilder.ToImmutableDictionary());
     }
 
     public GameConstraints CreateGameConstraints(InstanceGenerationOptions options, byte[,] grid, Random rng)
