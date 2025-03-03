@@ -102,6 +102,7 @@ For convenience, there is the "Check All" button to check all outstanding condit
 You can undo your moves one by one, either by clicking the undo button, or by pressing Escape or Backspace.
 
 ## Infeasibility
+![NewGame](images/Infeasible.JPG)
 
 The game has multiple ways to detect that there is no solution that can be reached from a given state:
 
