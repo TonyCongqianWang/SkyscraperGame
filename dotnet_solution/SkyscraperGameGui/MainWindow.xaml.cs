@@ -28,7 +28,6 @@ public partial class MainWindow : Window
                            MovesValuesLabel);
         newGameHandler = new(gameEngine,
                              queue,
-                             RngSeedBox,
                              GridSizeBox,
                              GridFillPercentBox,
                              ConstrFillPercentBox,

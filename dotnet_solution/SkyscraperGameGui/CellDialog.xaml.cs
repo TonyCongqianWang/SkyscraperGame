@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Markup;
+using System.Windows.Media;
 using System.Xml;
 
 namespace SkyscraperGameGui
@@ -31,6 +32,33 @@ namespace SkyscraperGameGui
 
             OptionsGrid.Children.Clear();
             OptionsGrid.Children.Add(clonedGrid);
+            var buttons = new List<Button>();
+            int number = 0;
+            foreach (var node in clonedGrid.Children)
+            {
+                if (node is TextBlock)
+                {
+                    int buttonNumber = ++number;
+                    Button button = new()
+                    {
+                        Opacity = 0,
+                        Background = Brushes.Transparent
+                    };
+                    button.Click += (sender, e) => {
+                        digitCallback(buttonNumber);
+                        Close();
+                    };
+                    buttons.Add(button);
+                }
+            }
+            int numRows = clonedGrid.RowDefinitions.Count;
+            for (int index = 0; index < buttons.Count; index++)
+            {
+                var button = buttons[index];
+                clonedGrid.Children.Add(button);
+                Grid.SetRow(button, index / numRows);
+                Grid.SetColumn(button, index % numRows);
+            }
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)

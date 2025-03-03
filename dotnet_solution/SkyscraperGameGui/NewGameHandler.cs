@@ -1,6 +1,4 @@
 ﻿using SkyscraperGameEngine;
-using System.Security.Cryptography;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -9,19 +7,17 @@ namespace SkyscraperGameGui;
 internal class NewGameHandler(
     GameInterface gameEngine,
     PuzzlesQueue queue,
-    TextBox rngSeedBox,
     TextBox gridSizeBox,
     TextBox gridFillPercentBox,
     TextBox constrFillPercentBox,
     CheckBox allowInFeasibleCheckbox)
 {
-    readonly MD5 md5 = MD5.Create();
-
     public void SendStartNewGameRequest()
     {
         int mistries = 0;
         string? currentPuzzleString = null;
-        while (currentPuzzleString == null){
+        while (currentPuzzleString == null)
+        {
             string? nextPuzzleStr = queue.TryDequeuePuzzleString();
             if (nextPuzzleStr == null)
                 break;
@@ -50,13 +46,8 @@ internal class NewGameHandler(
 
     private InstanceGenerationOptions CreateInstanceGenerationOptions()
     {
-        byte[] seedBytes = Encoding.UTF8.GetBytes(rngSeedBox.Text);
-        int seed = Math.Abs(BitConverter.ToInt32(md5.ComputeHash(seedBytes), 0));
-        if (rngSeedBox.Text == "")
-            seed = -1;
         InstanceGenerationOptions options = new()
         {
-            RandomSeed = seed,
             AllowInfeasible = allowInFeasibleCheckbox.IsChecked == true
         };
         if (int.TryParse(gridSizeBox.Text, out int size))
