@@ -24,45 +24,45 @@ Example:
 You can see a fully filled puzzle above. For the first row the number on the left is `3` and the numbers in the row from left to right are:
 
 ```
-      x
-    x x
-x   x x
-x x x x
-x x x x x
-3 2 4 5 1
+->        x
+->      x x
+->  x   x x
+->  x x x x
+->  x x x x x
+    3 2 4 5 1
 ```
 
 Thus there are three visible skyscrapers:
 
 ```
-      x
-    x x
-x   x x
-x x x x
-x x x x x
-3 _ 4 5 _
+------->  x
+--->    x x
+->  x   x x
+->  x x x x
+->  x x x x x
+    3 _ 4 5 _
 ```
 
 and the condition is satisfied. From right side perspective, the numbers are in reversed order:
 
 ```
-  x   
-  x x 
-  x x   x
-  x x x x
-x x x x x
-1 5 4 2 3
+->    x   
+->    x x 
+->    x x   x
+->    x x x x
+->  x x x x x
+    1 5 4 2 3
 ```
 
 Thus only two skyscrapers are visible and the condition is also satisfied:
 
 ```
-  x   
-  x x 
-  x x   x
-  x x x x
-x x x x x
-1 5 _ _ _
+--->  x   
+--->  x x 
+--->  x x   x
+--->  x x x x
+->  x x x x x
+    1 5 _ _ _
 ```
 
 ### Game End
