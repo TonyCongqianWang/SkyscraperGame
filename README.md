@@ -17,7 +17,7 @@ Like in Sudoku every column and row contains each number exactly once.
 Unlike Sudoku, there are no boxes. Instead some rows or columns will have to satisfy "skyscraper conditions".
 To understand this condition, one can imagine the puzzle in three dimensions, where the number indicates the height of a "skyscraper" built at that position.
 
-The colored numbers on the outside indicate how many skyscrapers are visible in the given row or column from that position in the completed grid. A skyscraper is visible if and only if there are no taller skyscrapers infront.
+The colored numbers on the outside indicate how many skyscrapers are visible in the given row or column from that position in the completed grid. A skyscraper is visible if and only if there are no taller skyscrapers in front.
 
 Example:
 
@@ -78,9 +78,7 @@ By clicking new Game you can generate a new puzzle, but will be asked to confirm
 
 There are different settings you can play around with to adapt the difficulty.
 You can change the grid size, the number of already set numbers and the number of skyscraper conditions.
-By default all puzzles will have a solution. If you want to try out a puzzle that is infeasible, you can check the "Allow Infeasible" box.
-
-Additionally it is possible to generate the same puzzle again, if you set a random seed. This can be useful if you want to share a puzzle with someone else.
+By default all puzzles will have a solution. If you want to try out a puzzle that is potentially infeasible, you can check the "Allow Infeasible" box.
 
 ## Controls
 
@@ -95,13 +93,23 @@ additionally numbers that have already been proved to be invalid will not be all
 However the Skyscraper condition will only be checked when you request so explicitely.
 
 ### Checking a Skyscraper condition
-Click on the surrounding cells to check if that particular Skyscraper condition can still be satisfied, if not,
+Click on the surrounding cells to check if that particular Skyscraper condition can still be satisfied, if not your state will be marked infeasible and
 you have to undo your moves until you reach a feasible state again.
 Once you insert a number, the surrounding cells (which start out green) change color to reflect the new information.
 For convenience, there is the "Check All" button to check all outstanding conditions.
 
 ### Undo Moves
 You can undo your moves one by one, either by clicking the undo button, or by pressing Escape or Backspace.
+
+## Infeasibility
+
+The game has multiple ways to detect that there is no solution that can be reached from a given state:
+
+- a skyscraper condition is not satisfiable with the given grid.
+- there is a cell with no valid numbers
+- there is a number `x` for which no cell in a row or column `x` is a valid number.
+
+Once an infeasible state is reached, the only possible action is to undo. The exception is when there is no insert left to undo. In that case the puzzle is completed, since it has been proven that it has no solution.
 
 ## Installation
 
