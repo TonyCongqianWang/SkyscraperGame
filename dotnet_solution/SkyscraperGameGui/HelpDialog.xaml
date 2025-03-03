@@ -1,0 +1,11 @@
+<Window x:Class="SkyscraperGameGui.HelpDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="HelpDialog" Height="200" Width="400"
+        KeyDown="Window_KeyDown">
+
+    <Grid>
+        <TextBox x:Name="box" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True">
+        </TextBox>
+    </Grid>
+</Window>

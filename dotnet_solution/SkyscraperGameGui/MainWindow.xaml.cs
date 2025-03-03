@@ -75,4 +75,24 @@ public partial class MainWindow : Window
             UnsetButton_Click(sender, e);
         }
     }
+
+    private void HelpButton_Click(object sender, RoutedEventArgs e)
+    {
+        HelpDialog dialog = new()
+        {
+            Owner = this,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+        };
+        dialog.Show();
+    }
+
+    private void LoadSaveButton_Click(object sender, RoutedEventArgs e)
+    {
+        LoadSaveDialog dialog = new()
+        {
+            Owner = this,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+        };
+        dialog.Show();
+    }
 }
