@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Drawing;
 
 namespace SkyscraperGameEngine;
 
@@ -78,6 +77,11 @@ class GameNode
             }
         }
         rootNode.LastInsertPosition = (-1, -1);
+        foreach (var constr in rootNode.NeedsCheckConstraints)
+        {
+            if (constr.IsViolated(rootNode))
+                rootNode.IsInfeasible = true;
+        }
         rootNode.NeedsCheckConstraints.Clear();
         rootNode.UpdateSolveStatus();
         return rootNode;
@@ -121,6 +125,14 @@ class GameNode
                 byte ub = GridValidValues[i, j].Max();
                 yield return (lb, ub);
             }
+        }
+    }
+
+    public IEnumerable<byte> GetGridValues(IEnumerable<(int, int)> positions)
+    {
+        foreach (var (i, j) in positions)
+        {
+            yield return GridValues[i, j];
         }
     }
 

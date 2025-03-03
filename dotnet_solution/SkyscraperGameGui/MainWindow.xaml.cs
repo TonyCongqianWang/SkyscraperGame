@@ -9,6 +9,7 @@ namespace SkyscraperGameGui;
 /// </summary>
 public partial class MainWindow : Window
 {
+    readonly PuzzlesQueue queue = new();
     readonly GridRenderer renderer;
     readonly InfoRenderer infoRenderer;
     readonly GameInterface gameEngine = new();
@@ -25,13 +26,14 @@ public partial class MainWindow : Window
                            CurrentDepthLabel,
                            SolvingTimeLabel,
                            MovesValuesLabel);
-        gameEngine.GetState();
         newGameHandler = new(gameEngine,
+                             queue,
                              RngSeedBox,
                              GridSizeBox,
                              GridFillPercentBox,
                              ConstrFillPercentBox,
                              AllowInFeasibleCheckbox);
+        newGameHandler.SendStartNewGameRequest();
         RenderGame(resetTimer: true);
     }
 
@@ -45,7 +47,7 @@ public partial class MainWindow : Window
         dialog.ShowDialog();
         if (dialog.DialogResult == true)
         {
-            newGameHandler.SendNewGameRequest();
+            newGameHandler.SendStartNewGameRequest();
             RenderGame(resetTimer: true);
         }
     }
@@ -88,7 +90,7 @@ public partial class MainWindow : Window
 
     private void LoadSaveButton_Click(object sender, RoutedEventArgs e)
     {
-        LoadSaveDialog dialog = new()
+        LoadSaveDialog dialog = new(queue, newGameHandler)
         {
             Owner = this,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,

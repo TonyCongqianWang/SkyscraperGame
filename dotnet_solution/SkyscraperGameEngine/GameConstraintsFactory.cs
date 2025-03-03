@@ -6,8 +6,6 @@ using GridContraintMap = ImmutableDictionary<(int, int), ImmutableArray<GameCons
 
 class GameConstraintsFactory
 {
-    private readonly ConstraintChecker checker = new();
-
     static public GameConstraints CreateEmptyConstraints(byte[,] grid)
     {
         int size = grid.GetLength(0);
@@ -23,6 +21,42 @@ class GameConstraintsFactory
         GridContraintMap.Builder mappingBuilder = ImmutableDictionary.CreateBuilder<(int, int), ImmutableArray<GameConstraint>>();
         foreach (var pos in positions)
             mappingBuilder.Add(pos, []);
+        return new([.. constraints], mappingBuilder.ToImmutableDictionary());
+    }
+
+    public static GameConstraints CreateGameConstraints(int[] constraintValues)
+    {
+        if (constraintValues.Length % 4 != 0)
+            throw new(nameof(constraintValues.Length));
+        int size = constraintValues.Length / 4;
+
+        GameConstraint[] constraints = new GameConstraint[size * 4];
+
+        Dictionary<(int, int), List<GameConstraint>> gridContraintMap = [];
+        foreach (int col in Enumerable.Range(0, size))
+        {
+            foreach (int row in Enumerable.Range(0, size))
+            {
+                gridContraintMap[(row, col)] = [];
+            }
+        }
+        for (int constraintIdx = 0; constraintIdx < 4 * size; constraintIdx++)
+        {
+            if ((constraintValues[constraintIdx] == 0))
+            {
+                constraints[constraintIdx] = new GameConstraint(constraintIdx, 0, []);
+                continue;
+            }
+            ImmutableArray<(int, int)> gridPositions = GetGridPositions(size, constraintIdx);
+            int constraintValue = constraintValues[constraintIdx];
+            constraints[constraintIdx] = new GameConstraint(constraintIdx, (byte)constraintValue, gridPositions);
+            foreach (var pos in gridPositions)
+                gridContraintMap[pos].Add(constraints[constraintIdx]);
+
+        }
+        GridContraintMap.Builder mappingBuilder = ImmutableDictionary.CreateBuilder<(int, int), ImmutableArray<GameConstraint>>();
+        foreach (var (key, value) in gridContraintMap)
+            mappingBuilder.Add(key, [.. value]);
         return new([.. constraints], mappingBuilder.ToImmutableDictionary());
     }
 
@@ -67,7 +101,7 @@ class GameConstraintsFactory
             }
             ImmutableArray<(int, int)> gridPositions = GetGridPositions(size, constraintIdx);
             var gridValues = gridPositions.Select(((int y, int x) p) => grid[p.y, p.x]);
-            int constraintValue = checker.CalculateConstraintValue(gridValues);
+            int constraintValue = ConstraintChecking.CalculateConstraintValue(gridValues);
             if (modifyIndeces.Contains(constraintIdx))
             {
                 modifyValues.MoveNext();

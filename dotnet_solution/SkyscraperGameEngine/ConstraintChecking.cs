@@ -1,15 +1,21 @@
 ﻿namespace SkyscraperGameEngine;
 
-class ConstraintChecker
+class ConstraintChecking
 {
-    public bool IsConstraintSatisfiable(int constraintValue,
+    public static bool IsConstraintSatisfiable(int constraintValue,
                                                byte maxValue,
                                                IEnumerable<(byte, byte)> gridValueBounds)
     {
         return IsConstraintSatisfiableWithBounds(constraintValue, maxValue, gridValueBounds);
     }
 
-    public int CalculateConstraintValue(IEnumerable<byte> gridValues)
+    public static bool IsConstraintViolated(int constraintValue, IEnumerable<byte> gridValues)
+    {
+        int actualValue = CalculateConstraintValue(gridValues);
+        return gridValues.All(v => v != 0) && actualValue != constraintValue;
+    }
+
+    public static int CalculateConstraintValue(IEnumerable<byte> gridValues)
     {
         int cValue = 0;
         int currentMax = 0;
@@ -24,7 +30,7 @@ class ConstraintChecker
         return cValue;
     }
 
-    public (int cValLb, int cValUb) CalculateConstraintBounds(
+    public static (int cValLb, int cValUb) CalculateConstraintBounds(
         IEnumerable<(byte, byte)> gridValueBounds,
         byte maxValue)
     {
@@ -100,7 +106,7 @@ class ConstraintChecker
             CurrentMaxLb = Math.Max(CurrentMaxLb, index);
         }
 
-        public bool ReachedMaxValue()
+        public readonly bool ReachedMaxValue()
         {
             return CurrentMaxLb == maximumValue;
         }

@@ -10,13 +10,27 @@ public class GameInterface
     {
         instanceGenerator = new();
         engine = new(instanceGenerator.GenerateNewGame(new()));
-
-        StartNewGame(new InstanceGenerationOptions());
     }
 
-    public void StartNewGame(InstanceGenerationOptions options)
+    public string StartNewGame(InstanceGenerationOptions options)
     {
         engine.GameState = instanceGenerator.GenerateNewGame(options);
+        return InstanceSerialization.SerializePuzzle(engine.GameState);
+    }
+
+    public string? StartNewGame(string puzzleString)
+    {
+        GameState? gameState = InstanceSerialization.TryDeserializePuzzle(puzzleString);
+        if (gameState == null)
+            return null;
+        engine.GameState = gameState;
+        return InstanceSerialization.SerializePuzzle(engine.GameState);
+    }
+
+    public string GenerateNewGame(InstanceGenerationOptions options)
+    {
+        GameState state = instanceGenerator.GenerateNewGame(options);
+        return InstanceSerialization.SerializePuzzle(state);
     }
 
     public GameStateViewModel GetState()

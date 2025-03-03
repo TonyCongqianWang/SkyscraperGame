@@ -5,8 +5,6 @@ class GameEngine(GameState initialState, GameOptions? options = null)
     public GameOptions Options { get; } = options ?? new();
     public GameState GameState { get; set; } = initialState;
 
-    private readonly ConstraintChecker constraintChecker = new();
-
     public bool TryUndoLast()
     {
         GameNode currentNode = GameState.GameNodes.Peek();
@@ -71,7 +69,7 @@ class GameEngine(GameState initialState, GameOptions? options = null)
         GameState.GameStatistics.IncrementChecks();
         var constraint = GameState.GameConstraints.Constraints[constraintIndex];
         var gridValues = currentNode.GetGridValueBounds(constraint.Positions);
-        bool constraintSatisfiable = constraintChecker.IsConstraintSatisfiable(constraint.Value,
+        bool constraintSatisfiable = ConstraintChecking.IsConstraintSatisfiable(constraint.Value,
                                                                                (byte)GameState.GameSize,
                                                                                gridValues);
         currentNode.UpdateConstraintStatus(constraint, constraintSatisfiable);

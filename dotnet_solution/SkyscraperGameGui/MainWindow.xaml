@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SkyscraperGameGui"
         mc:Ignorable="d"
+        x:Name="SkyScraperGameMainWindow"
         Title="SkyScraper Puzzle" Height="750" Width="1300"
         ResizeMode="NoResize"
         KeyDown="Window_KeyDown">
