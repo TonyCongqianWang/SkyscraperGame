@@ -16,6 +16,8 @@ public partial class MainWindow : Window
     readonly NewGameHandler newGameHandler;
     readonly ConstraintCheckHandler constraintCheckHandler;
 
+    private static LoadSaveDialog? loadSaveDialogInstance;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -84,16 +86,28 @@ public partial class MainWindow : Window
             Owner = this,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
         };
-        dialog.Show();
+        dialog.ShowDialog();
     }
 
     private void LoadSaveButton_Click(object sender, RoutedEventArgs e)
     {
-        LoadSaveDialog dialog = new(queue, newGameHandler)
+        if (loadSaveDialogInstance == null)
         {
-            Owner = this,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-        };
-        dialog.Show();
+            loadSaveDialogInstance = new LoadSaveDialog(queue, newGameHandler)
+            {
+                Owner = this,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            };
+            loadSaveDialogInstance.Closed += (s, args) =>
+            {
+                loadSaveDialogInstance = null;
+                Focus();
+            };
+            loadSaveDialogInstance.Show();
+        }
+        else
+        {
+            loadSaveDialogInstance.Activate();
+        }
     }
 }
