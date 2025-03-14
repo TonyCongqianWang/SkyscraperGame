@@ -131,9 +131,9 @@ class GridRenderer(
                 if (subGrid != null)
                 {
                     int number = 1;
-                    for (int k = 0; k < 3; k++)
+                    for (int k = 0; k < subGridSize; k++)
                     {
-                        for (int l = 0; l < 3; l++)
+                        for (int l = 0; l < subGridSize; l++)
                         {
                             if (subGrid.Children
                                 .Cast<UIElement>()
