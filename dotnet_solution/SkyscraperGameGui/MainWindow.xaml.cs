@@ -61,7 +61,7 @@ public partial class MainWindow : Window
 
     public void RenderGame(bool resetTimer = false)
     {
-        GameStateViewModel gameStateModel = gameEngine.GetState();
+        GameObservation gameStateModel = gameEngine.GetState();
         infoRenderer.RenderInfo(gameStateModel, resetTimer);
         renderer.Render(GameGrid, gameStateModel);
     }

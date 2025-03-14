@@ -1,4 +1,5 @@
 ﻿using SkyscraperGameEngine;
+using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -11,31 +12,31 @@ class GridRenderer(
 {
     private int gridSize = 0;
 
-    public void Render(Grid gameGrid, GameStateViewModel model)
+    public void Render(Grid gameGrid, GameObservation observation)
     {
-        if (gridSize != model.Size)
+        if (gridSize != observation.Size)
         {
-            gridSize = model.Size;
-            CreateGrid(gameGrid, model.Size);
+            gridSize = observation.Size;
+            CreateGrid(gameGrid, observation.Size);
         }
 
-        for (int i = 0; i < model.Size; i++)
+        for (int i = 0; i < observation.Size; i++)
         {
             var topTextBlock = (TextBlock)gameGrid.FindName($"constr_box_top_{i}");
             if (topTextBlock != null)
             {
                 var topButton = (Button)gameGrid.FindName($"constr_button_top_{i}");
-                if (model.TopValues[i] > 0)
+                if (observation.TopValues[i] > 0)
                 {
                     topButton?.SetValue(UIElement.IsEnabledProperty, true);
-                    topTextBlock.Text = model.TopValues[i].ToString();
+                    topTextBlock.Text = observation.TopValues[i].ToString();
                 }
                 else
                 {
                     topButton?.SetValue(UIElement.IsEnabledProperty, false);
                     topTextBlock.Text = "";
                 }
-                if (!model.TopValueNeedsCheckArray[i])
+                if (!observation.TopValueNeedsCheckArray[i])
                     topTextBlock.Foreground = Brushes.LimeGreen;
                 else
                     topTextBlock.Foreground = Brushes.Orange;
@@ -45,17 +46,17 @@ class GridRenderer(
             if (bottomTextBlock != null)
             {
                 var bottomButton = (Button)gameGrid.FindName($"constr_button_bottom_{i}");
-                if (model.BottomValues[i] > 0)
+                if (observation.BottomValues[i] > 0)
                 {
                     bottomButton?.SetValue(UIElement.IsEnabledProperty, true);
-                    bottomTextBlock.Text = model.BottomValues[i].ToString();
+                    bottomTextBlock.Text = observation.BottomValues[i].ToString();
                 }
                 else
                 {
                     bottomButton?.SetValue(UIElement.IsEnabledProperty, false);
                     bottomTextBlock.Text = "";
                 }
-                if (!model.BottomValueNeedsCheckArray[i])
+                if (!observation.BottomValueNeedsCheckArray[i])
                     bottomTextBlock.Foreground = Brushes.LimeGreen;
                 else
                     bottomTextBlock.Foreground = Brushes.Orange;
@@ -65,17 +66,17 @@ class GridRenderer(
             if (leftTextBlock != null)
             {
                 var leftButton = (Button)gameGrid.FindName($"constr_button_left_{i}");
-                if (model.LeftValues[i] > 0)
+                if (observation.LeftValues[i] > 0)
                 {
                     leftButton?.SetValue(UIElement.IsEnabledProperty, true);
-                    leftTextBlock.Text = model.LeftValues[i].ToString();
+                    leftTextBlock.Text = observation.LeftValues[i].ToString();
                 }
                 else
                 {
                     leftButton?.SetValue(UIElement.IsEnabledProperty, false);
                     leftTextBlock.Text = "";
                 }
-                if (!model.LeftValueNeedsCheckArray[i])
+                if (!observation.LeftValueNeedsCheckArray[i])
                     leftTextBlock.Foreground = Brushes.LimeGreen;
                 else
                     leftTextBlock.Foreground = Brushes.Orange;
@@ -85,47 +86,48 @@ class GridRenderer(
             if (rightTextBlock != null)
             {
                 var rightButton = (Button)gameGrid.FindName($"constr_button_right_{i}");
-                if (model.RightValues[i] > 0)
+                if (observation.RightValues[i] > 0)
                 {
                     rightButton?.SetValue(UIElement.IsEnabledProperty, true);
-                    rightTextBlock.Text = model.RightValues[i].ToString();
+                    rightTextBlock.Text = observation.RightValues[i].ToString();
                 }
                 else
                 {
                     rightButton?.SetValue(UIElement.IsEnabledProperty, false);
                     rightTextBlock.Text = "";
                 }
-                if (!model.RightValueNeedsCheckArray[i])
+                if (!observation.RightValueNeedsCheckArray[i])
                     rightTextBlock.Foreground = Brushes.LimeGreen;
                 else
                     rightTextBlock.Foreground = Brushes.Orange;
             }
         }
 
-        for (int i = 0; i < model.Size; i++)
+        for (int i = 0; i < observation.Size; i++)
         {
-            for (int j = 0; j < model.Size; j++)
+            for (int j = 0; j < observation.Size; j++)
             {
                 var textBox = (TextBox)gameGrid.FindName($"grid_cell_value_box_{i}_{j}");
                 if (textBox != null)
                 {
                     var cellButton = (Button)gameGrid.FindName($"grid_cell_button_{i}_{j}");
-                    if (model.GridValues[i, j] > 0)
+                    if (observation.GridValues[i, j] > 0)
                     {
                         cellButton?.SetValue(UIElement.IsEnabledProperty, false);
-                        textBox.Text = model.GridValues[i, j].ToString();
+                        textBox.Text = observation.GridValues[i, j].ToString();
                     }
                     else
                     {
                         cellButton?.SetValue(UIElement.IsEnabledProperty, true);
                         textBox.Text = "";
                     }
-                    if (model.IsInfeasible)
+                    if (observation.IsInfeasible)
                         cellButton?.SetValue(UIElement.IsEnabledProperty, false);
                     textBox.Background = Brushes.White;
                 }
 
                 var subGrid = (Grid)gameGrid.FindName($"grid_cellset_box{i}_{j}");
+                int subGridSize = (int)Math.Ceiling(Math.Sqrt(observation.Size));
                 if (subGrid != null)
                 {
                     int number = 1;
@@ -140,10 +142,10 @@ class GridRenderer(
                                 is TextBlock textBlock)
                             {
                                 textBlock.Opacity = 1;
-                                textBlock.Text = number <= model.Size ? number.ToString() : "";
-                                if (model.GridValues[i, j] > 0 || number > model.Size)
+                                textBlock.Text = number <= observation.Size ? number.ToString() : "";
+                                if (observation.GridValues[i, j] > 0 || number > observation.Size)
                                     textBlock.Opacity = 0;
-                                else if (!model.ValidInsertionsArray[i, j, number - 1])
+                                else if (!observation.ValidInsertionsArray[i, j, number - 1])
                                     textBlock.Foreground = Brushes.LightGray;
                                 else
                                     textBlock.Foreground = Brushes.Black;
@@ -154,14 +156,14 @@ class GridRenderer(
                 }
             }
         }
-        (int x, int y) = model.LastSetIndex;
+        (int x, int y) = observation.LastSetIndex;
         if (x >= 0 && y >= 0)
         {
             var lastSetTextBox = (TextBox)gameGrid.FindName($"grid_cell_value_box_{x}_{y}");
             if (lastSetTextBox != null)
             {
                 lastSetTextBox.Background = Brushes.Beige;
-                if (model.IsInfeasible)
+                if (observation.IsInfeasible)
                     lastSetTextBox.Background = Brushes.DarkGray;
             }
         }
@@ -257,7 +259,7 @@ class GridRenderer(
                     Margin = new Thickness(5)
                 };
 
-                for (int k = 0; k < 3; k++)
+                for (int k = 0; k < subGridSize; k++)
                 {
                     subGrid.RowDefinitions.Add(new RowDefinition());
                     subGrid.ColumnDefinitions.Add(new ColumnDefinition());

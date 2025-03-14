@@ -3,7 +3,7 @@
 namespace SkyscraperGameEngine;
 
 
-public record class GameStateViewModel
+public record class GameObservation
 {
     public int Size { get; }
     public int CurrentDepth { get; set; } = 0;
@@ -24,7 +24,7 @@ public record class GameStateViewModel
     public byte[,] GridValues { get; set; }
     public bool[,,] ValidInsertionsArray { get; set; }
 
-    public GameStateViewModel(int size)
+    public GameObservation(int size)
     {
         if (size < 4 || size > 9)
             throw new ArgumentException("Size must be between 4 and 9");
@@ -43,7 +43,7 @@ public record class GameStateViewModel
         ValidInsertionsArray = new bool[size, size, size];
     }
 
-    internal GameStateViewModel(GameState gameState)
+    internal GameObservation(GameState gameState)
     {
         GameNode currendNode = gameState.GameNodes.Peek();
         NumInserts = gameState.GameStatistics.NumInserts;

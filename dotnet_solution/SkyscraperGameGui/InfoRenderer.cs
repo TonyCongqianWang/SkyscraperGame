@@ -29,7 +29,7 @@ class InfoRenderer
         timer.Start();
     }
 
-    public void RenderInfo(GameStateViewModel gameModel, bool resetTimer = false)
+    public void RenderInfo(GameObservation gameModel, bool resetTimer = false)
     {
         if (resetTimer)
             StartTimer();
