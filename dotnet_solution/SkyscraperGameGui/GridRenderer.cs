@@ -1,5 +1,4 @@
 ﻿using SkyscraperGameEngine;
-using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -10,145 +9,158 @@ class GridRenderer(
     GridButtonCallbackFactory cellDialogCallbackFactory,
     ConstraintCheckHandler constraintDialogCallbackFactory)
 {
-    private int gridSize = 0;
+    private const int minSize = 4;
+    private const int maxSize = 9;
+
+    private GameGridViewModel gameGridViewModel = new();
+    private bool showValidNumbers = true;
+    private int puzzleSize = 0;
 
     public void Render(Grid gameGrid, GameObservation observation)
     {
-        if (gridSize != observation.Size)
+        if (observation.Size < minSize || observation.Size > maxSize)
         {
-            gridSize = observation.Size;
-            CreateGrid(gameGrid, observation.Size);
+            RenderInvalidGridPlaceholder(gameGrid, observation);
+            return;
+        }
+        if (puzzleSize != observation.Size)
+        {
+            puzzleSize = observation.Size;
+            CreateGrid(gameGrid);
         }
 
-        for (int i = 0; i < observation.Size; i++)
+        for (int i = 0; i < puzzleSize; i++)
         {
-            var topTextBlock = (TextBlock)gameGrid.FindName($"constr_box_top_{i}");
-            if (topTextBlock != null)
+            var topConstraintLabel = (Label)gameGrid.FindName($"constr_box_top_{i}");
+            if (topConstraintLabel != null)
             {
                 var topButton = (Button)gameGrid.FindName($"constr_button_top_{i}");
                 if (observation.TopValues[i] > 0)
                 {
                     topButton?.SetValue(UIElement.IsEnabledProperty, true);
-                    topTextBlock.Text = observation.TopValues[i].ToString();
+                    topConstraintLabel.Content = observation.TopValues[i].ToString();
                 }
                 else
                 {
                     topButton?.SetValue(UIElement.IsEnabledProperty, false);
-                    topTextBlock.Text = "";
+                    topConstraintLabel.Content = "";
                 }
                 if (!observation.TopValueNeedsCheckArray[i])
-                    topTextBlock.Foreground = Brushes.LimeGreen;
+                    topConstraintLabel.Foreground = Brushes.LimeGreen;
                 else
-                    topTextBlock.Foreground = Brushes.Orange;
+                    topConstraintLabel.Foreground = Brushes.Orange;
             }
 
-            var bottomTextBlock = (TextBlock)gameGrid.FindName($"constr_box_bottom_{i}");
-            if (bottomTextBlock != null)
+            var bottomConstraintLabel = (Label)gameGrid.FindName($"constr_box_bottom_{i}");
+            if (bottomConstraintLabel != null)
             {
                 var bottomButton = (Button)gameGrid.FindName($"constr_button_bottom_{i}");
                 if (observation.BottomValues[i] > 0)
                 {
                     bottomButton?.SetValue(UIElement.IsEnabledProperty, true);
-                    bottomTextBlock.Text = observation.BottomValues[i].ToString();
+                    bottomConstraintLabel.Content = observation.BottomValues[i].ToString();
                 }
                 else
                 {
                     bottomButton?.SetValue(UIElement.IsEnabledProperty, false);
-                    bottomTextBlock.Text = "";
+                    bottomConstraintLabel.Content = "";
                 }
                 if (!observation.BottomValueNeedsCheckArray[i])
-                    bottomTextBlock.Foreground = Brushes.LimeGreen;
+                    bottomConstraintLabel.Foreground = Brushes.LimeGreen;
                 else
-                    bottomTextBlock.Foreground = Brushes.Orange;
+                    bottomConstraintLabel.Foreground = Brushes.Orange;
             }
 
-            var leftTextBlock = (TextBlock)gameGrid.FindName($"constr_box_left_{i}");
-            if (leftTextBlock != null)
+            var leftConstraintLabel = (Label)gameGrid.FindName($"constr_box_left_{i}");
+            if (leftConstraintLabel != null)
             {
                 var leftButton = (Button)gameGrid.FindName($"constr_button_left_{i}");
                 if (observation.LeftValues[i] > 0)
                 {
                     leftButton?.SetValue(UIElement.IsEnabledProperty, true);
-                    leftTextBlock.Text = observation.LeftValues[i].ToString();
+                    leftConstraintLabel.Content = observation.LeftValues[i].ToString();
                 }
                 else
                 {
                     leftButton?.SetValue(UIElement.IsEnabledProperty, false);
-                    leftTextBlock.Text = "";
+                    leftConstraintLabel.Content = "";
                 }
                 if (!observation.LeftValueNeedsCheckArray[i])
-                    leftTextBlock.Foreground = Brushes.LimeGreen;
+                    leftConstraintLabel.Foreground = Brushes.LimeGreen;
                 else
-                    leftTextBlock.Foreground = Brushes.Orange;
+                    leftConstraintLabel.Foreground = Brushes.Orange;
             }
 
-            var rightTextBlock = (TextBlock)gameGrid.FindName($"constr_box_right_{i}");
-            if (rightTextBlock != null)
+            var rightContraintLabel = (Label)gameGrid.FindName($"constr_box_right_{i}");
+            if (rightContraintLabel != null)
             {
                 var rightButton = (Button)gameGrid.FindName($"constr_button_right_{i}");
                 if (observation.RightValues[i] > 0)
                 {
                     rightButton?.SetValue(UIElement.IsEnabledProperty, true);
-                    rightTextBlock.Text = observation.RightValues[i].ToString();
+                    rightContraintLabel.Content = observation.RightValues[i].ToString();
                 }
                 else
                 {
                     rightButton?.SetValue(UIElement.IsEnabledProperty, false);
-                    rightTextBlock.Text = "";
+                    rightContraintLabel.Content = "";
                 }
                 if (!observation.RightValueNeedsCheckArray[i])
-                    rightTextBlock.Foreground = Brushes.LimeGreen;
+                    rightContraintLabel.Foreground = Brushes.LimeGreen;
                 else
-                    rightTextBlock.Foreground = Brushes.Orange;
+                    rightContraintLabel.Foreground = Brushes.Orange;
             }
         }
 
-        for (int i = 0; i < observation.Size; i++)
+        for (int i = 0; i < puzzleSize; i++)
         {
-            for (int j = 0; j < observation.Size; j++)
+            for (int j = 0; j < puzzleSize; j++)
             {
-                var textBox = (TextBox)gameGrid.FindName($"grid_cell_value_box_{i}_{j}");
-                if (textBox != null)
+                var cellValueLabel = (Label)gameGrid.FindName($"grid_cell_value_box_{i}_{j}");
+                if (cellValueLabel != null)
                 {
                     var cellButton = (Button)gameGrid.FindName($"grid_cell_button_{i}_{j}");
                     if (observation.GridValues[i, j] > 0)
                     {
                         cellButton?.SetValue(UIElement.IsEnabledProperty, false);
-                        textBox.Text = observation.GridValues[i, j].ToString();
+                        cellValueLabel.Content = observation.GridValues[i, j].ToString();
+                        cellValueLabel.Opacity = 1;
                     }
                     else
                     {
                         cellButton?.SetValue(UIElement.IsEnabledProperty, true);
-                        textBox.Text = "";
+                        cellValueLabel.Content = "";
+                        cellValueLabel.Opacity = 0;
                     }
                     if (observation.IsInfeasible)
                         cellButton?.SetValue(UIElement.IsEnabledProperty, false);
-                    textBox.Background = Brushes.White;
+                    cellValueLabel.Background = Brushes.White;
                 }
 
                 var subGrid = (Grid)gameGrid.FindName($"grid_cellset_box{i}_{j}");
-                int subGridSize = (int)Math.Ceiling(Math.Sqrt(observation.Size));
+                int subGridSize = (int)Math.Ceiling(Math.Sqrt(puzzleSize));
                 if (subGrid != null)
                 {
+                    if (observation.GridValues[i, j] > 0 || !showValidNumbers)
+                        subGrid.Opacity = 0;
+                    else
+                        subGrid.Opacity = 1;
                     int number = 1;
                     for (int k = 0; k < subGridSize; k++)
                     {
-                        for (int l = 0; l < subGridSize; l++)
+                        for (int l = 0; l < subGridSize && number <= puzzleSize; l++)
                         {
                             if (subGrid.Children
                                 .Cast<UIElement>()
                                 .FirstOrDefault(e =>
                                     Grid.GetRow(e) == k && Grid.GetColumn(e) == l)
-                                is TextBlock textBlock)
+                                is TextBox validNumberBox)
                             {
-                                textBlock.Opacity = 1;
-                                textBlock.Text = number <= observation.Size ? number.ToString() : "";
-                                if (observation.GridValues[i, j] > 0 || number > observation.Size)
-                                    textBlock.Opacity = 0;
-                                else if (!observation.ValidInsertionsArray[i, j, number - 1])
-                                    textBlock.Foreground = Brushes.LightGray;
+                                validNumberBox.Text = number <= puzzleSize ? number.ToString() : "";
+                                if (!observation.ValidInsertionsArray[i, j, number - 1])
+                                    validNumberBox.Foreground = Brushes.LightGray;
                                 else
-                                    textBlock.Foreground = Brushes.Black;
+                                    validNumberBox.Foreground = Brushes.Black;
                                 number++;
                             }
                         }
@@ -159,81 +171,56 @@ class GridRenderer(
         (int x, int y) = observation.LastSetIndex;
         if (x >= 0 && y >= 0)
         {
-            var lastSetTextBox = (TextBox)gameGrid.FindName($"grid_cell_value_box_{x}_{y}");
-            if (lastSetTextBox != null)
+            var lastSetLabel = (Label)gameGrid.FindName($"grid_cell_value_box_{x}_{y}");
+            if (lastSetLabel != null)
             {
-                lastSetTextBox.Background = Brushes.Beige;
+                lastSetLabel.Background = Brushes.Beige;
                 if (observation.IsInfeasible)
-                    lastSetTextBox.Background = Brushes.DarkGray;
+                    lastSetLabel.Background = Brushes.DarkGray;
             }
         }
     }
 
-    private void CreateGrid(Grid gameGrid, int size)
+    private static void RenderInvalidGridPlaceholder(Grid gameGrid, GameObservation observation)
     {
-        int outer_size = size + 2;
+        ClearGrid(gameGrid);
+        gameGrid.Children.Add(new TextBlock
+        {
+            Text = $"Unable to display puzzle of size {observation.Size}.",
+            FontSize = 30,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        });
+    }
 
+    private static void ClearGrid(Grid gameGrid)
+    {
         gameGrid.RowDefinitions.Clear();
         gameGrid.ColumnDefinitions.Clear();
         gameGrid.Children.Clear();
+    }
+
+    private void CreateGrid(Grid gameGrid)
+    {
+        int totalGridSize = puzzleSize + 2;
+
+        ClearGrid(gameGrid);
 
         NameScope.SetNameScope(gameGrid, new NameScope());
 
-        for (int i = 0; i < outer_size; i++)
+        for (int i = 0; i < totalGridSize; i++)
         {
             gameGrid.RowDefinitions.Add(new RowDefinition());
             gameGrid.ColumnDefinitions.Add(new ColumnDefinition());
         }
 
-        for (int i = 0; i < outer_size; i++)
-        {
-            for (int j = 0; j < outer_size; j++)
-            {
-                if ((i == 0 || i == outer_size - 1 || j == 0 || j == outer_size - 1)
-                    && !((i == 0 || i == outer_size - 1) && (j == 0 || j == outer_size - 1)))
-                {
-                    string position = "";
-                    if (i == 0)
-                        position = $"_top_{j - 1}";
-                    else if (i == outer_size - 1)
-                        position = $"_bottom_{j - 1}";
-                    else if (j == 0)
-                        position = $"_left_{i - 1}";
-                    else if (j == outer_size - 1)
-                        position = $"_right_{i - 1}";
-                    TextBlock textBlock = new()
-                    {
-                        Name = $"constr_box{position}",
-                        Text = "0",
-                        FontSize = 20,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        Margin = new Thickness(2)
-                    };
-                    gameGrid.Children.Add(textBlock);
-                    Grid.SetRow(textBlock, i);
-                    Grid.SetColumn(textBlock, j);
-                    gameGrid.RegisterName(textBlock.Name, textBlock);
+        AddPuzzleConstraintsUi(gameGrid);
+        AddPuzzleGridUi(gameGrid);
+    }
 
-                    Button button = new()
-                    {
-                        Name = $"constr_button{position}",
-                        Opacity = 0,
-                        Background = Brushes.Transparent
-                    };
-                    Action callback = constraintDialogCallbackFactory
-                        .CreateButtonCallback(position, size);
-                    button.Click += (sender, e) => { callback(); };
-                    gameGrid.Children.Add(button);
-                    Grid.SetRow(button, i);
-                    Grid.SetColumn(button, j);
-                    gameGrid.RegisterName(button.Name, button);
-                }
-            }
-        }
-
-        int subGridSize = (int)Math.Ceiling(Math.Sqrt(size));
-        Grid innerGrid = new()
+    private void AddPuzzleGridUi(Grid gameGrid)
+    {
+        Grid puzzleCellGrid = new()
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Stretch,
@@ -241,89 +228,17 @@ class GridRenderer(
             ShowGridLines = false
         };
 
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < puzzleSize; i++)
         {
-            innerGrid.RowDefinitions.Add(new RowDefinition());
-            innerGrid.ColumnDefinitions.Add(new ColumnDefinition());
+            puzzleCellGrid.RowDefinitions.Add(new RowDefinition());
+            puzzleCellGrid.ColumnDefinitions.Add(new ColumnDefinition());
         }
 
-        for (int i = 0; i < size; i++)
+        for (int i = 0; i < puzzleSize; i++)
         {
-            for (int j = 0; j < size; j++)
+            for (int j = 0; j < puzzleSize; j++)
             {
-                Grid subGrid = new()
-                {
-                    Name = $"grid_cellset_box{i}_{j}",
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(5)
-                };
-
-                for (int k = 0; k < subGridSize; k++)
-                {
-                    subGrid.RowDefinitions.Add(new RowDefinition());
-                    subGrid.ColumnDefinitions.Add(new ColumnDefinition());
-                }
-
-                int number = 1;
-                for (int k = 0; k < subGridSize; k++)
-                {
-                    for (int l = 0; l < subGridSize; l++)
-                    {
-                        TextBlock textBlock = new()
-                        {
-                            Text = number <= size ? number.ToString() : "",
-                            FontSize = 12,
-                            HorizontalAlignment = HorizontalAlignment.Center,
-                            VerticalAlignment = VerticalAlignment.Center,
-                            Margin = new Thickness(2)
-                        };
-                        subGrid.Children.Add(textBlock);
-                        Grid.SetRow(textBlock, k);
-                        Grid.SetColumn(textBlock, l);
-                        number++;
-                    }
-                }
-
-                innerGrid.Children.Add(subGrid);
-                Grid.SetRow(subGrid, i);
-                Grid.SetColumn(subGrid, j);
-                gameGrid.RegisterName(subGrid.Name, subGrid);
-
-                double cellSize = Math.Min(gameGrid.Width, gameGrid.Height) / size;
-                TextBox textBox = new()
-                {
-                    Name = $"grid_cell_value_box_{i}_{j}",
-                    Text = "",
-                    TextAlignment = TextAlignment.Center,
-                    FontSize = 24,
-                    HorizontalContentAlignment = HorizontalAlignment.Center,
-                    VerticalContentAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Margin = new Thickness(2),
-                    BorderThickness = new Thickness(0),
-                    Background = Brushes.Transparent,
-                    Width = cellSize * 0.8,
-                    Height = cellSize * 0.8
-                };
-                gameGrid.Children.Add(textBox);
-                Grid.SetRow(textBox, i + 1);
-                Grid.SetColumn(textBox, j + 1);
-                gameGrid.RegisterName(textBox.Name, textBox);
-
-                Button button = new()
-                {
-                    Name = $"grid_cell_button_{i}_{j}",
-                    Opacity = 0,
-                    Background = Brushes.Transparent
-                };
-                Action callback = cellDialogCallbackFactory.CreateCallback(subGrid, (i, j));
-                button.Click += (sender, e) => { callback(); };
-                innerGrid.Children.Add(button);
-                Grid.SetRow(button, i);
-                Grid.SetColumn(button, j);
-                gameGrid.RegisterName(button.Name, button);
+                AddCellUiElements(gameGrid, puzzleCellGrid, i, j);
             }
         }
 
@@ -331,13 +246,169 @@ class GridRenderer(
         {
             BorderBrush = Brushes.Black,
             BorderThickness = new Thickness(2),
-            Child = innerGrid
+            Child = puzzleCellGrid
         };
 
         gameGrid.Children.Add(innerGridBorder);
         Grid.SetRow(innerGridBorder, 1);
         Grid.SetColumn(innerGridBorder, 1);
-        Grid.SetRowSpan(innerGridBorder, size);
-        Grid.SetColumnSpan(innerGridBorder, size);
+        Grid.SetRowSpan(innerGridBorder, puzzleSize);
+        Grid.SetColumnSpan(innerGridBorder, puzzleSize);
+    }
+
+    private void AddCellUiElements(Grid gameGrid, Grid innerGrid, int i, int j)
+    {
+        Grid subGrid = AddValidNumbersUi(gameGrid, puzzleSize, innerGrid, i, j);
+        Action buttonCallback = cellDialogCallbackFactory.CreateCallback(subGrid, (i, j));
+        AddGridValueUi(gameGrid, puzzleSize, i, j);
+        AddCellDialogButton(gameGrid, innerGrid, i, j, buttonCallback);
+    }
+
+    private static void AddCellDialogButton(Grid gameGrid, Grid innerGrid, int i, int j, Action callback)
+    {
+        Button button = new()
+        {
+            Name = $"grid_cell_button_{i}_{j}",
+            Opacity = 0,
+            Background = Brushes.Transparent
+        };
+        button.Click += (sender, e) => { callback(); };
+        innerGrid.Children.Add(button);
+        Grid.SetRow(button, i);
+        Grid.SetColumn(button, j);
+        gameGrid.RegisterName(button.Name, button);
+    }
+
+    private static void AddGridValueUi(Grid gameGrid, int size, int i, int j)
+    {
+        double cellSize = Math.Min(gameGrid.Width, gameGrid.Height) / size;
+        Label label = new()
+        {
+            Name = $"grid_cell_value_box_{i}_{j}",
+            Content = "",
+            FontSize = 24,
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(2),
+            BorderThickness = new Thickness(0),
+            Background = Brushes.Transparent,
+            Width = cellSize * 0.8,
+            Height = cellSize * 0.8
+        };
+        gameGrid.Children.Add(label);
+        Grid.SetRow(label, i + 1);
+        Grid.SetColumn(label, j + 1);
+        gameGrid.RegisterName(label.Name, label);
+    }
+
+    private Grid AddValidNumbersUi(Grid gameGrid, int size, Grid innerGrid, int i, int j)
+    {
+        int subGridSize = (int)Math.Ceiling(Math.Sqrt(puzzleSize));
+        Grid subGrid = new()
+        {
+            Name = $"grid_cellset_box{i}_{j}",
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(5)
+        };
+
+        for (int k = 0; k < subGridSize; k++)
+        {
+            subGrid.RowDefinitions.Add(new RowDefinition());
+            subGrid.ColumnDefinitions.Add(new ColumnDefinition());
+        }
+
+        int number = 1;
+        for (int k = 0; k < subGridSize; k++)
+        {
+            for (int l = 0; l < subGridSize && number <= size; l++)
+            {
+                TextBox box = new()
+                {
+                    Focusable = false,
+                    BorderBrush = Brushes.Transparent,
+                    Text = number.ToString(),
+                    FontSize = 13,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    Margin = new Thickness(-1),
+                    Foreground = Brushes.Black,
+                    Opacity = 1
+                };
+                subGrid.Children.Add(box);
+                Grid.SetRow(box, k);
+                Grid.SetColumn(box, l);
+                number++;
+            }
+        }
+
+        innerGrid.Children.Add(subGrid);
+        Grid.SetRow(subGrid, i);
+        Grid.SetColumn(subGrid, j);
+        gameGrid.RegisterName(subGrid.Name, subGrid);
+        return subGrid;
+    }
+
+    private void AddPuzzleConstraintsUi(Grid gameGrid)
+    {
+        for (int j = 0; j < puzzleSize; j++)
+        {
+            string position = $"_top_{j}";
+            AddConstraintUiElements(gameGrid, 0, j + 1, position);
+        }
+
+        for (int j = 0; j < puzzleSize; j++)
+        {
+            string position = $"_bottom_{j}";
+            AddConstraintUiElements(gameGrid, puzzleSize + 1, j + 1, position);
+        }
+
+        for (int i = 0; i < puzzleSize; i++)
+        {
+            string position = $"_left_{i}";
+            AddConstraintUiElements(gameGrid, i + 1, 0, position);
+        }
+
+        for (int i = 0; i < puzzleSize; i++)
+        {
+            string position = $"_right_{i}";
+            AddConstraintUiElements(gameGrid, i + 1, puzzleSize + 1, position);
+        }
+    }
+
+    private void AddConstraintUiElements(Grid gameGrid, int i, int j, string positionStr)
+    {
+        Action buttonCallback = constraintDialogCallbackFactory.CreateButtonCallback(positionStr, puzzleSize);
+        Label label = new()
+        {
+            Name = $"constr_box{positionStr}",
+            Content = "0",
+            FontSize = 20,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(2)
+        };
+
+        Button button = new()
+        {
+            Name = $"constr_button{positionStr}",
+            Opacity = 0,
+            Background = Brushes.Transparent
+        };
+        button.Click += (sender, e) => { buttonCallback(); };
+
+        gameGrid.Children.Add(label);
+        Grid.SetRow(label, i);
+        Grid.SetColumn(label, j);
+        gameGrid.RegisterName(label.Name, label);
+
+        gameGrid.Children.Add(button);
+        Grid.SetRow(button, i);
+        Grid.SetColumn(button, j);
+        gameGrid.RegisterName(button.Name, button);
     }
 }

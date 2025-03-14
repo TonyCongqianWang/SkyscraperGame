@@ -15,14 +15,14 @@ public class PuzzlesQueue
     }
 
     public void EnqueuePuzzleString(string puzzleString)
-    { 
+    {
         upcomingPuzzleStringsQueue.Enqueue(puzzleString);
     }
 
     public void ReplaceQueue(IEnumerable<string> NewPuzzleStrings)
     {
         upcomingPuzzleStringsQueue.Clear();
-        foreach(var str in NewPuzzleStrings.Where(s => !string.IsNullOrWhiteSpace(s)))
+        foreach (var str in NewPuzzleStrings.Where(s => !string.IsNullOrWhiteSpace(s)))
             upcomingPuzzleStringsQueue.Enqueue(str);
     }
 }

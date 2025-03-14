@@ -29,6 +29,7 @@ namespace SkyscraperGameGui
             clonedGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
             clonedGrid.VerticalAlignment = VerticalAlignment.Stretch;
             clonedGrid.Margin = new Thickness(0);
+            clonedGrid.Opacity = 1;
 
             OptionsGrid.Children.Clear();
             OptionsGrid.Children.Add(clonedGrid);
@@ -36,7 +37,7 @@ namespace SkyscraperGameGui
             int number = 0;
             foreach (var node in clonedGrid.Children)
             {
-                if (node is TextBlock)
+                if (node is TextBox)
                 {
                     int buttonNumber = ++number;
                     Button button = new()
@@ -44,7 +45,8 @@ namespace SkyscraperGameGui
                         Opacity = 0,
                         Background = Brushes.Transparent
                     };
-                    button.Click += (sender, e) => {
+                    button.Click += (sender, e) =>
+                    {
                         digitCallback(buttonNumber);
                         Close();
                     };
