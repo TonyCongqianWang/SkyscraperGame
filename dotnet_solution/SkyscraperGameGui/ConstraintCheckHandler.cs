@@ -23,7 +23,7 @@ class ConstraintCheckHandler(MainWindow mainWindow, GameInterface gameEngine)
 
     public void ExecuteCheckAll()
     {
-        GameObservation gameStateModel = gameEngine.GetState();
+        GameObservation gameStateModel = gameEngine.GetObservation();
         int size = gameStateModel.Size;
         int cIdx = 0;
         for (; cIdx < 1 * size; cIdx++)

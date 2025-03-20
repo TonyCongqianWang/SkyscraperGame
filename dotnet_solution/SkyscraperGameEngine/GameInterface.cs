@@ -33,7 +33,7 @@ public class GameInterface
         return InstanceSerialization.SerializePuzzle(state);
     }
 
-    public GameObservation GetState()
+    public GameObservation GetObservation()
     {
         return new(engine.GameState);
     }

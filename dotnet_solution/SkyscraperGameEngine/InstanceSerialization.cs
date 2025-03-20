@@ -2,9 +2,9 @@
 
 namespace SkyscraperGameEngine;
 
-class InstanceSerialization
+static class InstanceSerialization
 {
-    public static string SerializePuzzle(GameState state)
+    public static string SerializePuzzle(this GameState state)
     {
         StringBuilder stringBuilder = new();
         stringBuilder.Append('\"');

@@ -3,6 +3,7 @@
 public class PuzzlesQueue
 {
     public string CurrentPuzzleString { get; set; } = "";
+    public string CurrentPositionString { get; set; } = "";
     public IEnumerable<string> UpconingPuzzleStrings => upcomingPuzzleStringsQueue;
 
     private readonly Queue<string> upcomingPuzzleStringsQueue = new();

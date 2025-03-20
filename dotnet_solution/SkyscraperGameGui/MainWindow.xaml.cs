@@ -61,9 +61,10 @@ public partial class MainWindow : Window
 
     public void RenderGame(bool resetTimer = false)
     {
-        GameObservation gameStateModel = gameEngine.GetState();
-        infoRenderer.RenderInfo(gameStateModel, resetTimer);
-        renderer.Render(GameGrid, gameStateModel);
+        GameObservation gameObservation = gameEngine.GetObservation();
+        queue.CurrentPositionString = gameObservation.StringRepresentation;
+        infoRenderer.RenderInfo(gameObservation, resetTimer);
+        renderer.Render(GameGrid, gameObservation);
     }
 
     private void CheckAllButton_Click(object sender, RoutedEventArgs e)

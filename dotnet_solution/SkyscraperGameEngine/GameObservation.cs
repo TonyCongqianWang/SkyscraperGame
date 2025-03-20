@@ -5,6 +5,8 @@ namespace SkyscraperGameEngine;
 
 public record class GameObservation
 {
+    public string StringRepresentation { get; }
+
     public int Size { get; }
     public int CurrentDepth { get; set; } = 0;
     public bool IsSolved { get; set; } = false;
@@ -24,10 +26,11 @@ public record class GameObservation
     public byte[,] GridValues { get; set; }
     public bool[,,] ValidInsertionsArray { get; set; }
 
-    public GameObservation(int size)
+    internal GameObservation(int size)
     {
         if (size < 4 || size > 9)
             throw new ArgumentException("Size must be between 4 and 9");
+        StringRepresentation = "";
         Size = size;
         TopValues = new byte[size];
         BottomValues = new byte[size];
@@ -45,6 +48,7 @@ public record class GameObservation
 
     internal GameObservation(GameState gameState)
     {
+        StringRepresentation = gameState.SerializePuzzle();
         GameNode currendNode = gameState.GameNodes.Peek();
         NumInserts = gameState.GameStatistics.NumInserts;
         NumChecks = gameState.GameStatistics.NumChecks;

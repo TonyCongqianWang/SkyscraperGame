@@ -24,7 +24,8 @@ partial class LoadSaveDialog : Window
 
     private void FillTextBoxes()
     {
-        currentTextbox.Text = queue.CurrentPuzzleString;
+        currentPuzzleTextbox.Text = queue.CurrentPuzzleString;
+        currentPositionTextbox.Text = queue.CurrentPositionString;
         StringBuilder stringBuilder = new();
         foreach (var str in queue.UpconingPuzzleStrings)
         {
